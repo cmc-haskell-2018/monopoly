@@ -515,6 +515,7 @@ changeBalance :: Player -> Int -> Player
 changeBalance player value = player
     { money = (money player) + value }
 
+{--
 data ChanceCard = ChanceCard
     { num :: Int
     , price2 :: Int
@@ -554,6 +555,7 @@ initCards cards =
 
 chanceCard :: GameState -> GameState
 chanceCard gameState = gameState
+--}
 
 payTax :: GameState -> Int -> GameState
 payTax gameState count = gameState
