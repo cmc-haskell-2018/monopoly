@@ -3,4 +3,6 @@ module Main where
 import Monopoly
 
 main :: IO ()
-main = run
+main = do
+  images <- loadImages
+  startGame images
