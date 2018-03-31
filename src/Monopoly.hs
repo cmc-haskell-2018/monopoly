@@ -27,6 +27,7 @@ loadImages = do
   Just pieceYellow  <- loadJuicyPNG "images/pieceYellow.png"
   Just playingField <- loadJuicyPNG "images/field.png"
   Just payMenu <- loadJuicyPNG "images/payMenu.png"
+  Just endWindow <- loadJuicyPNG "images/end.png"
   return Images
     { imagePieceRed    = scale 0.1 0.1 pieceRed
     , imagePieceBlue   = scale 0.1 0.1 pieceBlue
@@ -34,7 +35,7 @@ loadImages = do
     , imagePieceYellow = scale 0.1 0.1 pieceYellow
     , imagePlayingField = playingField
     , imagePayMenu = scale 0.6 0.6 payMenu
-    --, imageWinnerWindow
+    , imageWinnerWindow = scale 0.8 0.8 endWindow
     }
 
 
@@ -380,6 +381,19 @@ canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
 -- | Отобразить состояние игры.
 drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
+    | (haveWinner gameState) = pictures
+        [ drawPlayingField (imagePlayingField images)
+        , drawEnd (imageWinnerWindow images)
+        , drawWinnerWindow gameState
+        , drawPiece (imagePieceRed images) player1
+        , drawPiece (imagePieceBlue  images) player2
+        , drawPiece (imagePieceGreen  images) player3
+        , drawPiece (imagePieceYellow  images) player4
+        , drawMoney player1
+        , drawMoney player2
+        , drawMoney player3
+        , drawMoney player4
+        ]
     | (typeStep gameState) == stepGo = pictures
         [ drawPlayingField (imagePlayingField images)
         , drawPiece (imagePieceRed images) player1
@@ -402,19 +416,7 @@ drawGameState images gameState
         , drawMoney player2
         , drawMoney player3
         , drawMoney player4
-        ]
-    | (haveWinner gameState) = pictures
-        [ drawPlayingField (imagePlayingField images)
-        --, drawWinnerWindow (imageWinnerWindow images) gameState
-        , drawPiece (imagePieceRed images) player1
-        , drawPiece (imagePieceBlue  images) player2
-        , drawPiece (imagePieceGreen  images) player3
-        , drawPiece (imagePieceYellow  images) player4
-        , drawMoney player1
-        , drawMoney player2
-        , drawMoney player3
-        , drawMoney player4
-        ]
+        ]    
     | otherwise = pictures
         [ drawPlayingField (imagePlayingField images)
         , drawPiece (imagePieceRed images) player1
@@ -446,7 +448,16 @@ drawMoney player
 drawPayMenu :: Picture -> Picture
 drawPayMenu image = translate 0 0 image
 
---drawWinnerWindow :: Picture -> GameState -> Picture
+drawEnd :: Picture -> Picture
+drawEnd image = translate 0 0  image
+
+drawWinnerWindow :: GameState -> Picture
+drawWinnerWindow gameState = translate x y (scale r r (text str))
+  where
+    (x, y) = (-130, -150)
+    r = 1 / fromIntegral 2
+    colour_str = show ((gamePlayer gameState) + 1)
+    str = "Player " ++ colour_str
 
 -- | Отобразить фишки.
 drawPiece :: Picture -> Player -> Picture
@@ -496,8 +507,8 @@ isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
 doStep :: GameState -> GameState
 doStep gameState 
   | (haveWinner gameState) = gameState
-  | (canGo gameState) = makeMove gameState
-  | otherwise = gameNextPlayer gameState
+  | (money ((players gameState) !! (mod ((gamePlayer gameState) - 1) playersNumber))) < 0 = makeMove (returnBoughtPlace gameState)
+  | otherwise = makeMove gameState
 
 haveWinner :: GameState -> Bool
 haveWinner gameState 
@@ -505,10 +516,19 @@ haveWinner gameState
   | otherwise = True
 
 haveMoney :: Player -> Bool
-haveMoney player = (money player) >= 0
+haveMoney player = (money player) > 0
 
+returnBoughtPlace :: GameState -> GameState 
+returnBoughtPlace gameState = gameState {land = deletePlace (land gameState) (mod ((gamePlayer gameState) - 1) playersNumber)}
+
+deletePlace :: [Street] -> Int -> [Street]
+deletePlace [] _ = []
+deletePlace (x:xs) num | (owner x) == num = (x {isRent = False} : (deletePlace xs num))
+                       | otherwise = (x : (deletePlace xs num))
+{--
 canGo :: GameState -> Bool
 canGo gameState = True
+--}
 
 makeMove :: GameState -> GameState
 makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState)))
