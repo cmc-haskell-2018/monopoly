@@ -27,6 +27,7 @@ data GameState = GameState
   , cubes :: Cubes
   , land :: [Street]
   , typeStep :: Int
+  , intSeq :: [Int]
   }
 
 data Player = Player

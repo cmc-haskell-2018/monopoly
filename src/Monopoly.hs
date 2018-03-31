@@ -5,13 +5,13 @@ import Graphics.Gloss.Interface.Pure.Game
 import Const
 import Model
 import Debug.Trace()
-
---import System.Random
+import System.Random
 
 -- | Запустить моделирование с заданным начальным состоянием вселенной.
 startGame :: Images -> IO ()
-startGame images
-  = play display bgColor fps initGame (drawGameState images) handleGame updateGameState
+startGame images = do
+  gen <- getStdGen
+  play display bgColor fps (initGame gen) (drawGameState images) handleGame updateGameState
   where
     display = FullScreen -- InWindow "Монополия"
     bgColor = white      -- Цвет фона
@@ -43,8 +43,8 @@ loadImages = do
 
 
 -- | Сгенерировать начальное состояние игры.
-initGame :: GameState
-initGame = GameState
+initGame :: StdGen -> GameState
+initGame gen = GameState
   { players =
       [ Player
         { colour = 1
@@ -370,6 +370,7 @@ initGame = GameState
       , owner = 0
       }
     ]
+  , intSeq = randomRs (1,6) gen
   }
 
 canBuy :: GameState -> Bool
@@ -675,12 +676,13 @@ payTax gameState count = gameState
 
 -- | Кинуть кубики
 throwCubes :: GameState -> GameState
-throwCubes gameState = gameState
-    { cubes = Cubes
-        { firstCube = 1
-        , secondCube = 0
-        }
-    }
+throwCubes gameState = 
+  let
+    list = intSeq gameState
+    first = head list
+    second = head (tail list)
+    nextList = drop 2 list
+  in gameState { cubes = Cubes { firstCube = first, secondCube = second}, intSeq = nextList }
 
 -- | Совершение покупки спецсеминара
 makePay :: GameState -> GameState
