@@ -6,8 +6,8 @@
 Клонируйте репозиторий:
 
 ```
-git clone https://github.com/gmoryes/haskell.git
-cd haskell
+https://github.com/cmc-haskell-2018/monopoly.git
+cd monopoly
 ```
 
 Соберите проект при помощи [утилиты Stack](https://www.haskellstack.org):
