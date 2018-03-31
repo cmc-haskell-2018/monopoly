@@ -28,6 +28,7 @@ loadImages = do
   Just payMenu <- loadJuicyPNG "images/payMenu.png"
   Just endWindow <- loadJuicyPNG "images/end.png"
   Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
+  Just cubesPic <- loadJuicyPNG "images/cubes.png"
   return Images
     { imagePieceRed    = scale 0.1 0.1 pieceRed
     , imagePieceBlue   = scale 0.1 0.1 pieceBlue
@@ -37,6 +38,7 @@ loadImages = do
     , imagePayMenu = scale 0.6 0.6 payMenu
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
+    , imageCubes = scale 0.6 0.6 cubesPic
     }
 
 
@@ -395,6 +397,8 @@ drawGameState images gameState
         , drawMoney player3
         , drawMoney player4
         , drawCurrPlayer (imageCurrPlayer images) gameState
+        , drawCubesPic (imageCubes images)
+        , drawCubes gameState
         ]
     | (typeStep gameState) == stepGo = pictures
         [ drawPlayingField (imagePlayingField images)
@@ -407,6 +411,8 @@ drawGameState images gameState
         , drawMoney player3
         , drawMoney player4
         , drawCurrPlayer (imageCurrPlayer images) gameState
+        , drawCubesPic (imageCubes images)
+        , drawCubes gameState
         ]
     | (typeStep gameState) == stepPay = pictures -- | меню для совершения покупки
         [ drawPlayingField (imagePlayingField images)
@@ -420,6 +426,8 @@ drawGameState images gameState
         , drawMoney player3
         , drawMoney player4
         , drawCurrPlayer (imageCurrPlayer images) gameState
+        , drawCubesPic (imageCubes images)
+        , drawCubes gameState
         ]
     | otherwise = pictures
         [ drawPlayingField (imagePlayingField images)
@@ -432,6 +440,8 @@ drawGameState images gameState
         , drawMoney player3
         , drawMoney player4
         , drawCurrPlayer (imageCurrPlayer images) gameState
+        , drawCubesPic (imageCubes images)
+        , drawCubes gameState
         ]
   where
     player1 = ((players gameState) !! 0)
@@ -482,6 +492,22 @@ drawPiece image player
     where
       (x, y) = (playerPosition player)
       r = 2
+
+-- | Отобразить цифры кубиков.
+drawCubes :: GameState -> Picture
+drawCubes gameState = translate x y (scale r r (text str))
+  where
+    (x, y) = (-573, -360)
+    cubeOne = show (firstCube (cubes gameState))
+    cubeTwo = show (secondCube (cubes gameState))
+    str = cubeOne ++ " " ++ cubeTwo
+    r = 1 / fromIntegral 4
+
+-- | Отобразить форму кубиков.
+drawCubesPic :: Picture -> Picture
+drawCubesPic image = translate x y image
+  where
+    (x, y) = (-550, -350)
 
 -- | Отобразить игровое поле
 drawPlayingField :: Picture -> Picture
