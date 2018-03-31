@@ -460,7 +460,7 @@ drawCurrPlayer image gameState = translate x y image
 -- | Вывод баланса игрока
 drawMoney :: Player -> Picture
 drawMoney player
-    | (money player >= 0) = translate x y (scale r r (text money_str))
+    | (money player > 0) = translate x y (scale r r (text money_str))
     | otherwise = translate x y (scale r r (color red (text no_money_str)))
       where
         (x, y) = (-630, 400 - 50 * (fromIntegral (colour player)))
