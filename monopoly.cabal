@@ -2,7 +2,7 @@ name:                monopoly
 version:             0.1
 synopsis:            Монополия
 -- description:
-homepage:            https://github.com/cmc-haskell-2017/demo-space-junk#readme
+homepage:            https://github.com/cmc-haskell-2018/monopoly/
 license:             MIT
 license-file:        LICENSE
 author:              Nadya Yakunina, Irina Adamova, Alla Dorofeeva, Mikhail Gorbushin
@@ -43,4 +43,4 @@ test-suite doctest
 
 source-repository head
   type:     git
-  location: https://github.com/cmc-haskell-2017/demo-space-junk
+  location: https://github.com/cmc-haskell-2018/monopoly/
