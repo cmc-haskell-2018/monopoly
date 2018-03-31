@@ -1,5 +1,4 @@
 module Monopoly where
-
 import Graphics.Gloss.Juicy
 import Graphics.Gloss.Data.Vector()
 import Graphics.Gloss.Interface.Pure.Game
@@ -28,6 +27,7 @@ loadImages = do
   Just playingField <- loadJuicyPNG "images/field.png"
   Just payMenu <- loadJuicyPNG "images/payMenu.png"
   Just endWindow <- loadJuicyPNG "images/end.png"
+  Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
   return Images
     { imagePieceRed    = scale 0.1 0.1 pieceRed
     , imagePieceBlue   = scale 0.1 0.1 pieceBlue
@@ -36,14 +36,15 @@ loadImages = do
     , imagePlayingField = playingField
     , imagePayMenu = scale 0.6 0.6 payMenu
     , imageWinnerWindow = scale 0.8 0.8 endWindow
+    , imageCurrPlayer = scale 0.2 0.2 currPlayer
     }
 
 
 -- | Сгенерировать начальное состояние игры.
 initGame :: GameState
 initGame = GameState
-  { players = 
-      [ Player 
+  { players =
+      [ Player
         { colour = 1
         , money = 500
         , property = []
@@ -54,8 +55,8 @@ initGame = GameState
         { colour = 2
         , money = 500
         , property = []
-        , playerCell = 0
-        , playerPosition = getPlayerPosition 2 0
+        , playerCell = 0 --номер клетки на игровом поле
+        , playerPosition = getPlayerPosition 2 0 --где рисуется фишка игрока
         }
       , Player 
         { colour = 3
@@ -79,19 +80,19 @@ initGame = GameState
         , playerPosition = getPlayerPosition 4 1
         }
       ]
-  , cubes = Cubes 
+  , cubes = Cubes
       { firstCube = 1
       , secondCube = 0
       }
-  , gamePlayer = 0
-  , typeStep = stepGo
-  , land = 
+  , gamePlayer = 0 --чей сейчас ход
+  , typeStep = stepGo --тип текущего шага
+  , land =
     [ Street 
-      { name ="Старт"
-      , price = 0
-      , isRent = True
-      , priceRent = 0
-      , owner = 4
+      { name ="Старт" --название клетки
+      , price = 0 --цена покупки
+      , isRent = True --куплена ли кем-то; для специальных полей, которые нельзя купить - всегда True
+      , priceRent = 0 --стоимость аренды
+      , owner = 4 --кто ей владеет; для специальных  полей - фиктивный пятый игрок
       }
     , Street
       { name = "СКИ Квантовая информатика"
@@ -381,7 +382,7 @@ canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
 -- | Отобразить состояние игры.
 drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
-    | (haveWinner gameState) = pictures
+    | (haveWinner gameState) = pictures -- | если игра закончена и есть победитель
         [ drawPlayingField (imagePlayingField images)
         , drawEnd (imageWinnerWindow images)
         , drawWinnerWindow gameState
@@ -393,6 +394,7 @@ drawGameState images gameState
         , drawMoney player2
         , drawMoney player3
         , drawMoney player4
+        , drawCurrPlayer (imageCurrPlayer images) gameState
         ]
     | (typeStep gameState) == stepGo = pictures
         [ drawPlayingField (imagePlayingField images)
@@ -404,8 +406,9 @@ drawGameState images gameState
         , drawMoney player2
         , drawMoney player3
         , drawMoney player4
+        , drawCurrPlayer (imageCurrPlayer images) gameState
         ]
-    | (typeStep gameState) == stepPay = pictures
+    | (typeStep gameState) == stepPay = pictures -- | меню для совершения покупки
         [ drawPlayingField (imagePlayingField images)
         , drawPayMenu (imagePayMenu images)
         , drawPiece (imagePieceRed images) player1
@@ -416,7 +419,8 @@ drawGameState images gameState
         , drawMoney player2
         , drawMoney player3
         , drawMoney player4
-        ]    
+        , drawCurrPlayer (imageCurrPlayer images) gameState
+        ]
     | otherwise = pictures
         [ drawPlayingField (imagePlayingField images)
         , drawPiece (imagePieceRed images) player1
@@ -427,6 +431,7 @@ drawGameState images gameState
         , drawMoney player2
         , drawMoney player3
         , drawMoney player4
+        , drawCurrPlayer (imageCurrPlayer images) gameState
         ]
   where
     player1 = ((players gameState) !! 0)
@@ -434,6 +439,14 @@ drawGameState images gameState
     player3 = ((players gameState) !! 2)
     player4 = ((players gameState) !! 3)
 
+-- | Показать, чей сейчас ход
+drawCurrPlayer :: Picture -> GameState -> Picture
+drawCurrPlayer image gameState = translate x y image
+  where
+    (x, y) = (-510, 420 - 50 * (fromIntegral (colour player)))
+    player = (players gameState) !! (gamePlayer gameState)
+
+-- | Вывод баланса игрока
 drawMoney :: Player -> Picture
 drawMoney player
     | (money player >= 0) = translate x y (scale r r (text money_str))
@@ -445,9 +458,11 @@ drawMoney player
         colour_str = show (colour player)
         no_money_str = "Player " ++ colour_str ++ ": lost"
 
+-- | Вывод меню покупки
 drawPayMenu :: Picture -> Picture
 drawPayMenu image = translate 0 0 image
 
+-- | Вывод сообщения о победе
 drawEnd :: Picture -> Picture
 drawEnd image = translate 0 0  image
 
@@ -468,16 +483,9 @@ drawPiece image player
       (x, y) = (playerPosition player)
       r = 2
 
+-- | Отобразить игровое поле
 drawPlayingField :: Picture -> Picture
-drawPlayingField image = translate 0 0 image --(scale r r image)
-
-nextPlayer :: GameState -> Int
-nextPlayer gameState
-    | (money ((players gameState) !! nextNum)) >= 0 = nextNum
-    | otherwise = nextPlayer (gameState {gamePlayer = nextNum})
-
-  where
-    nextNum = mod ((gamePlayer gameState) + 1) playersNumber
+drawPlayingField image = translate 0 0 image
 
 -- =========================================
 -- Обработка событий
@@ -496,20 +504,19 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     | otherwise = gameState
 handleGame _ gameState = gameState
 
+-- | Смена текущего игрока в gameState
+nextPlayer :: GameState -> Int
+nextPlayer gameState
+    | (money ((players gameState) !! nextNum)) >= 0 = nextNum
+    | otherwise = nextPlayer (gameState {gamePlayer = nextNum})
+
+  where
+    nextNum = mod ((gamePlayer gameState) + 1) playersNumber
+
 gameNextPlayer :: GameState -> GameState
 gameNextPlayer gameState = gameState { gamePlayer = nextPlayer gameState }
 
-isPay :: Point -> Maybe Bool
-isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
-             | x > 0 && x < 100 && y > -50 && y < 50 = Just False
-             | otherwise = Nothing
-
-doStep :: GameState -> GameState
-doStep gameState 
-  | (haveWinner gameState) = gameState
-  | (money ((players gameState) !! (mod ((gamePlayer gameState) - 1) playersNumber))) < 0 = makeMove (returnBoughtPlace gameState)
-  | otherwise = makeMove gameState
-
+-- | Проверка, закончена игра или нет
 haveWinner :: GameState -> Bool
 haveWinner gameState 
   | (length (filter haveMoney (players gameState))) >= 2 = False
@@ -518,6 +525,24 @@ haveWinner gameState
 haveMoney :: Player -> Bool
 haveMoney player = (money player) > 0
 
+-- | Меню покупки: что выбрал игрок
+isPay :: Point -> Maybe Bool
+isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
+             | x > 0 && x < 100 && y > -50 && y < 50 = Just False
+             | otherwise = Nothing
+
+-- =======================================
+-- Совершение хода
+-- =======================================
+doStep :: GameState -> GameState
+doStep gameState 
+  | (haveWinner gameState) = gameState
+  | (money prevPlayer) < 0 = makeMove (returnBoughtPlace gameState)
+  | otherwise = makeMove gameState
+    where
+      prevPlayer = (players gameState) !! (mod ((gamePlayer gameState) - 1) playersNumber)
+
+-- | Возврат имущества проигравшего игрока
 returnBoughtPlace :: GameState -> GameState 
 returnBoughtPlace gameState = gameState {land = deletePlace (land gameState) (mod ((gamePlayer gameState) - 1) playersNumber)}
 
@@ -530,6 +555,7 @@ canGo :: GameState -> Bool
 canGo gameState = True
 --}
 
+-- | Переместиться и выполнить действия
 makeMove :: GameState -> GameState
 makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState)))
 
@@ -540,6 +566,7 @@ makeStepFeatures gameState
     | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
     | otherwise = gameState
 
+-- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
 payPriceRent gameState = gameState 
     { players = firstPlayers ++ [(changeBalance player rent_value)] ++ lastPlayers
@@ -550,6 +577,7 @@ payPriceRent gameState = gameState
     lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
     rent_value = (priceRent ((land gameState) !! (playerCell player))) * (-1)
 
+-- | Получить ренту от другого игрока
 getPriceRent :: GameState -> GameState
 getPriceRent gameState = gameState
     { players = firstPlayers ++ [(changeBalance player rent_value)] ++ lastPlayers
@@ -560,6 +588,7 @@ getPriceRent gameState = gameState
     lastPlayers = reverse (take (length (players gameState) - (colour player)) (reverse (players gameState)))
     rent_value = (priceRent ((land gameState) !! (playerCell player)))
 
+-- | Изменить баланс игрока
 changeBalance :: Player -> Int -> Player
 changeBalance player value = player
     { money = (money player) + value }
@@ -606,6 +635,7 @@ chanceCard :: GameState -> GameState
 chanceCard gameState = gameState
 --}
 
+-- | Уплата налогов
 payTax :: GameState -> Int -> GameState
 payTax gameState count = gameState
     { players = firstPlayers ++ [(player) { money = (money (player)) - count}]
@@ -617,6 +647,7 @@ payTax gameState count = gameState
     player = (players gameState) !! (gamePlayer gameState)
     lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
 
+-- | Кинуть кубики
 throwCubes :: GameState -> GameState
 throwCubes gameState = gameState
     { cubes = Cubes
@@ -625,6 +656,7 @@ throwCubes gameState = gameState
         }
     }
 
+-- | Совершение покупки спецсеминара
 makePay :: GameState -> GameState
 makePay gameState = gameState 
     { typeStep = stepGo
@@ -641,9 +673,11 @@ makePay gameState = gameState
     current_land = (land gameState) !! (playerCell player)
     lastLands = reverse (take (length (land gameState) - length(firstLands) - 1) (reverse (land gameState)))
 
+-- | Смена владельца у спецсеминара
 changeOwner :: Street -> Int -> Street
 changeOwner prev_street owner_id = prev_street { owner = owner_id, isRent = True }
 
+-- | Изменить поле, на котором находится текущий игрок
 changePlayerCell :: GameState -> GameState
 changePlayerCell gameState = gameState
     { players = firstPlayers ++ [player_after_move] ++ lastPlayers
@@ -656,13 +690,14 @@ changePlayerCell gameState = gameState
     cubesSum = (firstCube (cubes gameState)) + (secondCube (cubes gameState))
     player_after_move = (movePlayer player cubesSum)
 
--- Если кафедра свободна, переходим в состояние "предложить покупку"
--- Иначе просто совершаем шаг
+-- | Если кафедра свободна, переходим в состояние "предложить покупку"
+-- | Иначе просто совершаем шаг
 getTypeByCell :: Int -> GameState -> Int
 getTypeByCell index gameState
   | isRent ((land gameState) !! index) == False = stepPay
   | otherwise = stepGo
 
+-- | Переместить игрока на заданное число клеток
 movePlayer :: Player -> Int -> Player
 movePlayer player cubesSum = player 
     { playerCell = newPlayerCell
@@ -671,6 +706,7 @@ movePlayer player cubesSum = player
     where
         newPlayerCell = (mod ((playerCell player) + cubesSum) fieldsNumber)
 
+-- | Для игрока получить местоположение его фишки на игровом поле по номеру клетки
 getPlayerPosition :: Int -> Int -> Point
 getPlayerPosition player_number cell_num
     | (cell_num >= 0  && cell_num <= 10) = (fromIntegral (-375 + 15 + player_number * 15), fromIntegral (-305 + 15 + (cell_num) * 60))

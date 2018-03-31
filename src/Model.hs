@@ -17,6 +17,7 @@ data Images = Images
   , imagePlayingField :: Picture
   , imagePayMenu :: Picture
   , imageWinnerWindow :: Picture
+  , imageCurrPlayer :: Picture
   }
 
 data GameState = GameState
