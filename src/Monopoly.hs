@@ -34,6 +34,7 @@ loadImages = do
     , imagePieceYellow = scale 0.1 0.1 pieceYellow
     , imagePlayingField = playingField
     , imagePayMenu = scale 0.6 0.6 payMenu
+    --, imageWinnerWindow
     }
 
 
@@ -43,28 +44,28 @@ initGame = GameState
   { players = 
       [ Player 
         { colour = 1
-        , money = 1500
+        , money = 500
         , property = []
         , playerCell = 0
         , playerPosition = getPlayerPosition 1 0
         }
       ,  Player 
         { colour = 2
-        , money = 1500
+        , money = 500
         , property = []
         , playerCell = 0
         , playerPosition = getPlayerPosition 2 0
         }
       , Player 
         { colour = 3
-        , money = 1500
+        , money = 500
         , property = []
         , playerCell = 0
         , playerPosition = getPlayerPosition 3 0
         }
       , Player 
         { colour = 4
-        , money = 1500
+        , money = 500
         , property = []
         , playerCell = 0
         , playerPosition = getPlayerPosition 4 0
@@ -81,7 +82,6 @@ initGame = GameState
       { firstCube = 1
       , secondCube = 0
       }
-  , haveWinner = Nothing
   , gamePlayer = 0
   , typeStep = stepGo
   , land = 
@@ -403,6 +403,18 @@ drawGameState images gameState
         , drawMoney player3
         , drawMoney player4
         ]
+    | (haveWinner gameState) = pictures
+        [ drawPlayingField (imagePlayingField images)
+        --, drawWinnerWindow (imageWinnerWindow images) gameState
+        , drawPiece (imagePieceRed images) player1
+        , drawPiece (imagePieceBlue  images) player2
+        , drawPiece (imagePieceGreen  images) player3
+        , drawPiece (imagePieceYellow  images) player4
+        , drawMoney player1
+        , drawMoney player2
+        , drawMoney player3
+        , drawMoney player4
+        ]
     | otherwise = pictures
         [ drawPlayingField (imagePlayingField images)
         , drawPiece (imagePieceRed images) player1
@@ -421,28 +433,40 @@ drawGameState images gameState
     player4 = ((players gameState) !! 3)
 
 drawMoney :: Player -> Picture
-drawMoney player = translate x y (scale r r (text money_str))
-    where
+drawMoney player
+    | (money player >= 0) = translate x y (scale r r (text money_str))
+    | otherwise = translate x y (scale r r (color red (text no_money_str)))
+      where
         (x, y) = (-630, 400 - 50 * (fromIntegral (colour player)))
         money_str = "Player " ++ colour_str ++ ": " ++ show (money player)
         r = 1 / fromIntegral 5
         colour_str = show (colour player)
+        no_money_str = "Player " ++ colour_str ++ ": lost"
 
 drawPayMenu :: Picture -> Picture
 drawPayMenu image = translate 0 0 image
 
+--drawWinnerWindow :: Picture -> GameState -> Picture
+
 -- | Отобразить фишки.
 drawPiece :: Picture -> Player -> Picture
-drawPiece image player = translate x y (scale r r image)
-  where
-    (x, y) = (playerPosition player)
-    r = 2
+drawPiece image player 
+  | (money player >= 0) = translate x y (scale r r image)
+  | otherwise = Blank
+    where
+      (x, y) = (playerPosition player)
+      r = 2
 
 drawPlayingField :: Picture -> Picture
 drawPlayingField image = translate 0 0 image --(scale r r image)
 
 nextPlayer :: GameState -> Int
-nextPlayer gameState = (mod ((gamePlayer gameState) + 1) playersNumber)
+nextPlayer gameState
+    | (money ((players gameState) !! nextNum)) >= 0 = nextNum
+    | otherwise = nextPlayer (gameState {gamePlayer = nextNum})
+
+  where
+    nextNum = mod ((gamePlayer gameState) + 1) playersNumber
 
 -- =========================================
 -- Обработка событий
@@ -461,8 +485,8 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     | otherwise = gameState
 handleGame _ gameState = gameState
 
-gameNextPlater :: GameState -> GameState
-gameNextPlater gameState = gameState { gamePlayer = nextPlayer gameState }
+gameNextPlayer :: GameState -> GameState
+gameNextPlayer gameState = gameState { gamePlayer = nextPlayer gameState }
 
 isPay :: Point -> Maybe Bool
 isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
@@ -470,16 +494,21 @@ isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
              | otherwise = Nothing
 
 doStep :: GameState -> GameState
-doStep gameState =
-  case (haveWinner gameState) of
-    Just _ -> id gameState
-    Nothing ->  case canGo gameState of
-          Nothing -> gameState
-          Just _ -> makeMove gameState
+doStep gameState 
+  | (haveWinner gameState) = gameState
+  | (canGo gameState) = makeMove gameState
+  | otherwise = gameNextPlayer gameState
 
+haveWinner :: GameState -> Bool
+haveWinner gameState 
+  | (length (filter haveMoney (players gameState))) >= 2 = False
+  | otherwise = True
 
-canGo :: GameState -> Maybe GameState
-canGo gameState = Just (gameState)
+haveMoney :: Player -> Bool
+haveMoney player = (money player) >= 0
+
+canGo :: GameState -> Bool
+canGo gameState = True
 
 makeMove :: GameState -> GameState
 makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState)))
@@ -488,7 +517,7 @@ makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
-    | not (canBuy gameState) = gameNextPlater (getPriceRent (payPriceRent gameState))
+    | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
     | otherwise = gameState
 
 payPriceRent :: GameState -> GameState

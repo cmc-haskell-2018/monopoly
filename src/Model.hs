@@ -21,7 +21,6 @@ data Images = Images
 data GameState = GameState
   { players :: [Player]
   , gamePlayer :: Int
-  , haveWinner :: Maybe Int
   , cubes :: Cubes
   , land :: [Street]
   , typeStep :: Int
