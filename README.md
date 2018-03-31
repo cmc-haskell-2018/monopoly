@@ -20,7 +20,7 @@ stack build
 Собрать проект и запустить игру можно при помощи команды
 
 ```
-stack build && stack exec demo-space-junk
+stack build && stack exec monopoly
 ```
 
 ## Правила
