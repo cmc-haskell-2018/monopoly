@@ -5,9 +5,9 @@ synopsis:            Монополия
 homepage:            https://github.com/cmc-haskell-2017/demo-space-junk#readme
 license:             MIT
 license-file:        LICENSE
-author:              Nickolay Kudasov
-maintainer:          nickolay.kudasov@gmail.com
-copyright:           2017 Nickolay Kudasov
+author:              Nadya Yakunina, Irina Adamova, Alla Dorofeeva, Mikhail Gorbushin
+maintainer:          nadynady98@mail.ru
+copyright:           2017 Nadya Yakunina, Irina Adamova, Alla Dorofeeva, Mikhail Gorbushin
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
