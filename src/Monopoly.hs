@@ -57,8 +57,8 @@ initGame gen = GameState
         { colour = 2
         , money = 500
         , property = []
-        , playerCell = 0 --номер клетки на игровом поле
-        , playerPosition = getPlayerPosition 2 0 --где рисуется фишка игрока
+        , playerCell = 0 
+        , playerPosition = getPlayerPosition 2 0
         }
       , Player 
         { colour = 3
@@ -86,15 +86,15 @@ initGame gen = GameState
       { firstCube = 1
       , secondCube = 0
       }
-  , gamePlayer = 0 --чей сейчас ход
-  , typeStep = stepGo --тип текущего шага
+  , gamePlayer = 0 -- Чей сейчас ход
+  , typeStep = stepGo -- Тип текущего шага
   , land =
     [ Street 
-      { name ="Старт" --название клетки
-      , price = 0 --цена покупки
-      , isRent = True --куплена ли кем-то; для специальных полей, которые нельзя купить - всегда True
-      , priceRent = 0 --стоимость аренды
-      , owner = 4 --кто ей владеет; для специальных  полей - фиктивный пятый игрок
+      { name ="Старт"
+      , price = 0 
+      , isRent = True     -- Для специальных полей, которые нельзя купить - всегда True
+      , priceRent = 0
+      , owner = 4         -- Для специальных  полей - фиктивный пятый игрок
       }
     , Street
       { name = "СКИ Квантовая информатика"
@@ -385,7 +385,7 @@ canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
 -- | Отобразить состояние игры.
 drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
-    | (haveWinner gameState) = pictures -- | если игра закончена и есть победитель
+    | (haveWinner gameState) = pictures                -- Если игра закончена и есть победитель
         [ drawPlayingField (imagePlayingField images)
         , drawEnd (imageWinnerWindow images)
         , drawWinnerWindow gameState
@@ -415,7 +415,7 @@ drawGameState images gameState
         , drawCubesPic (imageCubes images)
         , drawCubes gameState
         ]
-    | (typeStep gameState) == stepPay = pictures -- | меню для совершения покупки
+    | (typeStep gameState) == stepPay = pictures            -- Меню для совершения покупки
         [ drawPlayingField (imagePlayingField images)
         , drawPayMenu (imagePayMenu images)
         , drawPiece (imagePieceRed images) player1
