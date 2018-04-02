@@ -1,7 +1,5 @@
 module Model where
 
-import Graphics.Gloss.Juicy
-import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Interface.Pure.Game
 -- =========================================
 -- Модель

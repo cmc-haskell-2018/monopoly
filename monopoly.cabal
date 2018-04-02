@@ -5,9 +5,9 @@ synopsis:            Монополия
 homepage:            https://github.com/cmc-haskell-2018/monopoly/
 license:             MIT
 license-file:        LICENSE
-author:              Nadya Yakunina, Irina Adamova, Alla Dorofeeva, Mikhail Gorbushin
+author:              Nadezhda Yakunina, Irina Adamova, Allochka Dorofeeva, Mikhail Gorbushin
 maintainer:          nadynady98@mail.ru
-copyright:           2017 Nadya Yakunina, Irina Adamova, Alla Dorofeeva, Mikhail Gorbushin
+copyright:           2018 Nadezhda Yakunina, Irina Adamova, Allochka Dorofeeva, Mikhail Gorbushin
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
