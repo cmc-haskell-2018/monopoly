@@ -29,6 +29,12 @@ loadImages = do
   Just endWindow <- loadJuicyPNG "images/end.png"
   Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
   Just cubesPic <- loadJuicyPNG "images/cubes.png"
+  Just cubesOne <- loadJuicyPNG "images/1.png"
+  Just cubesTwo <- loadJuicyPNG "images/2.png"
+  Just cubesThree <- loadJuicyPNG "images/3.png"
+  Just cubesFour <- loadJuicyPNG "images/4.png"
+  Just cubesFive <- loadJuicyPNG "images/5.png"
+  Just cubesSix <- loadJuicyPNG "images/6.png"
   return Images
     { imagePieceRed    = scale 0.1 0.1 pieceRed
     , imagePieceBlue   = scale 0.1 0.1 pieceBlue
@@ -39,6 +45,12 @@ loadImages = do
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
     , imageCubes = scale 0.6 0.6 cubesPic
+    , imageCubesOne = scale 0.6 0.6 cubesOne
+    , imageCubesTwo = scale 0.6 0.6 cubesTwo
+    , imageCubesThree = scale 0.6 0.6 cubesThree
+    , imageCubesFour = scale 0.6 0.6 cubesFour
+    , imageCubesFive = scale 0.6 0.6 cubesFive
+    , imageCubesSix = scale 0.6 0.6 cubesSix
     }
 
 
@@ -119,6 +131,8 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ]
   | (typeStep gameState) == stepGo = pictures
     [ drawPlayingField (imagePlayingField images)
@@ -133,6 +147,8 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))	
     ]
   | (typeStep gameState) == stepPay = pictures      -- Меню для совершения покупки
     [ drawPlayingField (imagePlayingField images)
@@ -148,6 +164,8 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))	
     ]
   | otherwise = pictures
     [ drawPlayingField (imagePlayingField images)
@@ -162,12 +180,29 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))	
     ]
   where
     player1 = ((players gameState) !! 0)
     player2 = ((players gameState) !! 1)
     player3 = ((players gameState) !! 2)
     player4 = ((players gameState) !! 3)
+
+makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
+makeListCube one two three four five six = [one, two, three, four, five, six] 
+
+drawLeftCube :: GameState -> [Picture] -> Picture
+drawLeftCube gameState pics = translate x y image
+	where
+		(x, y) = (-600, -250)
+		image = pics !! ((firstCube (cubes gameState)) - 1)
+
+drawRightCube :: GameState -> [Picture] -> Picture
+drawRightCube gameState pics = translate x y image
+	where
+		(x, y) = (-450, -250)
+		image = pics !! ((secondCube (cubes gameState)) - 1) 
 
 -- | Показать, чей сейчас ход
 drawCurrPlayer :: Picture -> GameState -> Picture
