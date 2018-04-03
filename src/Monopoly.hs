@@ -84,7 +84,7 @@ initGame gen = GameState
     ]
   , cubes = Cubes
     { firstCube = 1
-    , secondCube = 0
+    , secondCube = 1
     }
   , gamePlayer = 0 -- Чей сейчас ход
   , typeStep = stepGo -- Тип текущего шага
@@ -187,14 +187,14 @@ initGame gen = GameState
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Маткиб Дискретный анализ"
       , price = 160
       , priceRent = 18
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Машзал 2"
       , price = 200
       , priceRent = 25
@@ -208,56 +208,56 @@ initGame gen = GameState
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Общественная казна"
       , price = 0
       , isRent = True
       , priceRent = 0
       , owner = 4
       }
-    , Street 
+    , Street
       { name = "ИО Новикова"
       , price = 180
       , priceRent = 19
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "ИО Денисов"
       , price = 200
       , priceRent = 23
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Бесплатная курилка"
       , price = 0
       , isRent = True
       , priceRent = 0
       , owner = 4
       }
-    , Street 
+    , Street
       { name = "МАТСТАТ Теория рисков"
       , price = 220
       , priceRent = 22
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Шанс"
       , price = 0
       , isRent = True
       , priceRent = 0
       , owner = 4
       }
-    , Street 
+    , Street
       { name = "МАТСТАТ ДГМС"
       , price = 220
       , priceRent = 24
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "МАТСТАТ МОТВЫ"
       , price = 240
       , priceRent = 25
@@ -313,56 +313,56 @@ initGame gen = GameState
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "АЯ Компьютерная лингвистика"
       , price = 300
       , priceRent = 35
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Общественая казна"
       , price = 0
       , isRent = True
       , priceRent = 0
       , owner = 4
       }
-    , Street 
+    , Street
       { name = "АЯ Искусственный интеллект"
       , price = 320
       , priceRent = 32
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Машзал 4"
       , price = 200
       , priceRent = 21
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Шанс"
       , price = 0
       , isRent = True
       , priceRent = 0
       , owner = 4
       }
-    , Street 
+    , Street
       { name = "ММП МАТ"
       , price = 350
       , priceRent = 37
       , isRent = False
       , owner = 0
       }
-    , Street 
+    , Street
       { name = "Сверхналог"
       , priceRent = 100
       , price = 0
       , owner = 4 -- По алгоритму работы никто не сможет купить, потому что isRent = True
       , isRent = True -- Но при этом все будут платить мнимому 5ому игроку 100$
       }
-    , Street 
+    , Street
       { name = "ММП БММО"
       , price = 400
       , priceRent = 40
@@ -482,7 +482,7 @@ drawWinnerWindow gameState = translate x y (scale r r (text str))
   where
     (x, y) = (-130, -150)
     r = 1 / fromIntegral 2
-    colourStr = show ((gamePlayer gameState) + 1)
+    colourStr = show ((nextPlayer gameState) + 1)
     str = "Player " ++ colourStr
 
 -- | Отобразить фишки.
