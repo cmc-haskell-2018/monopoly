@@ -521,7 +521,7 @@ drawPlayingField image = translate 0 0 image
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (typeStep gameState) == stepGo = doStep gameState
-  | ((typeStep gameState) == stepPay) = case (isPay mouse) of
+  | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
     Just False -> gameState
       { typeStep = stepGo
@@ -587,9 +587,15 @@ makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState))
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
-    -- и перейти к следующему игроку
+    -- и перейти к следующему игроку   
+  | playersMoney <= (price currStreet) = gameState { gamePlayer = nextPlayer gameState, typeStep = stepGo }
   | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
+    where
+      player = (players gameState) !! (gamePlayer gameState)
+      playersMoney = (money ((players gameState) !! (gamePlayer gameState)))
+      currStreet  = (land gameState) !! cell
+      cell = (playerCell player)
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
@@ -648,12 +654,12 @@ throwCubes gameState =
 
 -- | Совершение покупки спецсеминара
 makePay :: GameState -> GameState
-makePay gameState = gameState 
-  { typeStep = stepGo
-  , players = firstPlayers ++ [changeBalance player priceValue] ++ lastPlayers
-  , gamePlayer = nextPlayer gameState
-  , land = firstLands ++ [changeOwner currentLand (gamePlayer gameState) ] ++ lastLands
-  }
+makePay gameState = gameState
+    { typeStep = stepGo
+    , players = firstPlayers ++ [changeBalance player priceValue] ++ lastPlayers
+    , gamePlayer = nextPlayer gameState
+    , land = firstLands ++ [changeOwner currentLand (gamePlayer gameState) ] ++ lastLands
+    }
     where
       firstPlayers = take (gamePlayer gameState) (players gameState)
       player = (players gameState) !! (gamePlayer gameState)
@@ -662,6 +668,7 @@ makePay gameState = gameState
       firstLands = take (playerCell player) (land gameState)
       currentLand = (land gameState) !! (playerCell player)
       lastLands = reverse (take (length (land gameState) - length(firstLands) - 1) (reverse (land gameState)))
+
 
 -- | Смена владельца у спецсеминара
 changeOwner :: Street -> Int -> Street
@@ -686,6 +693,7 @@ getTypeByCell :: Int -> GameState -> Int
 getTypeByCell index gameState
   | isRent ((land gameState) !! index) == False = stepPay
   | otherwise = stepGo
+    
 
 -- | Переместить игрока на заданное число клеток
 movePlayer :: Player -> Int -> Player
