@@ -52,6 +52,8 @@ initGame gen = GameState
       , property = []
       , playerCell = 0
       , playerPosition = getPlayerPosition 1 0
+      , inAcadem = False
+      , missSteps = 0
       }
     , Player
       { colour = 2
@@ -59,6 +61,8 @@ initGame gen = GameState
       , property = []
       , playerCell = 0
       , playerPosition = getPlayerPosition 2 0
+      , inAcadem = False
+      , missSteps = 0
       }
     , Player 
       { colour = 3
@@ -66,6 +70,8 @@ initGame gen = GameState
       , property = []
       , playerCell = 0
       , playerPosition = getPlayerPosition 3 0
+      , inAcadem = False
+      , missSteps = 0
       }
     , Player
       { colour = 4
@@ -73,6 +79,8 @@ initGame gen = GameState
       , property = []
       , playerCell = 0
       , playerPosition = getPlayerPosition 4 0
+      , inAcadem = False
+      , missSteps = 0
       }
     , Player -- Fictitious player
       { colour = 5
@@ -80,6 +88,8 @@ initGame gen = GameState
       , property = []
       , playerCell = 0
       , playerPosition = getPlayerPosition 4 1
+      , inAcadem = False
+      , missSteps = 0
       }
     ]
   , cubes = Cubes
@@ -183,7 +193,7 @@ drawMoney player
   | otherwise = translate x y (scale r r (color red (text noMoneyStr)))
     where
       (x, y) = (-630, 400 - 50 * (fromIntegral (colour player)))
-      moneyStr = "Player " ++ colourStr ++ ": " ++ show (money player)
+      moneyStr = "Player " ++ colourStr ++ ": " ++ show (money player) ++ "-" ++ show (missSteps player)
       r = 1 / fromIntegral 5
       colourStr = show (colour player)
       noMoneyStr = "Player " ++ colourStr ++ ": lost"
@@ -281,10 +291,22 @@ isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
 -- =======================================
 doStep :: GameState -> GameState
 doStep gameState | (haveWinner gameState) = gameState
+                 | (inAcadem player) = gameNextPlayer (changeAcademStatus gameState)  --потом добавлю: если игрок в академе, то показывалось, сколько ему еще осталось пропустить
                  | (money prevPlayer) < 0 = makeMove (returnBoughtPlace gameState)
                  | otherwise = makeMove gameState
   where
     prevPlayer = (players gameState) !! (mod ((gamePlayer gameState) - 1) playersNumber)
+    player = (players gameState) !! (gamePlayer gameState)
+
+changeAcademStatus :: GameState -> GameState
+changeAcademStatus gameState
+  | (missSteps player) == 0 = gameState {players = firstPlayers ++ [(player) { inAcadem = False }] ++ lastPlayers }
+  | otherwise = gameState { players = firstPlayers ++ [(player) { missSteps = (missSteps player) - 1}] ++ lastPlayers }
+    where
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = (players gameState) !! (gamePlayer gameState)
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+
 
 -- | Возврат имущества проигравшего игрока
 returnBoughtPlace :: GameState -> GameState 
@@ -307,8 +329,34 @@ makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
+  | currField == 30 = (gameNextPlayer (moveToAcadem gameState))
   | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
+    where
+      currField = (playerCell player)
+      player = (players gameState) !! (gamePlayer gameState)
+
+moveToAcadem :: GameState -> GameState
+moveToAcadem gameState = gameState
+  { players = firstPlayers ++ [(setAcademStatus (setPlayerCell player 10))] ++ lastPlayers
+  }
+    where
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = (players gameState) !! (gamePlayer gameState)
+      lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
+
+setPlayerCell :: Player -> Int -> Player
+setPlayerCell player cell = player
+  { playerCell = cell
+  , playerPosition = getPlayerPosition (colour player) cell
+  }
+
+setAcademStatus :: Player -> Player
+setAcademStatus player = player
+  { inAcadem = True
+  , missSteps = 3
+  }
+
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState

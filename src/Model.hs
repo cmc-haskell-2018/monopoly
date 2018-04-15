@@ -37,6 +37,8 @@ data Player = Player
   , property :: [Street]  -- Чем владеет
   , playerCell :: Int     -- На какой клетке поле находится
   , playerPosition :: Point  -- Где на поле нарисована его фишка (координаты)
+  , inAcadem :: Bool -- Находится ли в академе
+  , missSteps :: Int -- Сколько ходов осталось пропустить
   }
 
 -- | Информация о клетке поля
