@@ -20,15 +20,16 @@ startGame images = do
 -- | Загрузить изображения из файлов.
 loadImages :: IO Images
 loadImages = do
-  Just pieceRed     <- loadJuicyPNG "images/pieceRed.png"
-  Just pieceBlue    <- loadJuicyPNG "images/pieceBlue.png"
-  Just pieceGreen   <- loadJuicyPNG "images/pieceGreen.png"
-  Just pieceYellow  <- loadJuicyPNG "images/pieceYellow.png"
+  Just pieceRed     <- loadJuicyPNG "images/piece1.png"
+  Just pieceBlue    <- loadJuicyPNG "images/piece2.png"
+  Just pieceGreen   <- loadJuicyPNG "images/piece3.png"
+  Just pieceYellow  <- loadJuicyPNG "images/piece4.png"
   Just playingField <- loadJuicyPNG "images/field.png"
   Just payMenu <- loadJuicyPNG "images/payMenu.png"
   Just endWindow <- loadJuicyPNG "images/end.png"
   Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
   Just cubesPic <- loadJuicyPNG "images/cubes.png"
+  Just startMenu <- loadJuicyPNG "images/startMenu.png"
   return Images
     { imagePieceRed    = scale 0.1 0.1 pieceRed
     , imagePieceBlue   = scale 0.1 0.1 pieceBlue
@@ -39,6 +40,7 @@ loadImages = do
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
     , imageCubes = scale 0.6 0.6 cubesPic
+    , imageStartMenu = startMenu
     }
 
 
@@ -82,7 +84,7 @@ initGame gen = GameState
       , inAcadem = False
       , missSteps = 0
       }
-    , Player -- Fictitious player
+    , Player -- Фиктивный игрок
       { colour = 5
       , money = 0
       , property = []
@@ -100,6 +102,11 @@ initGame gen = GameState
   , typeStep = stepGo -- Тип текущего шага
   , land = getLand
   , intSeq = randomRs (1,6) gen
+  , isStartMenu = True
+  , stateStartMenu = StateStartMenu
+    { countPlayers = 4
+    , playersBegin = []
+    }
   }
 
 canBuy :: GameState -> Bool
@@ -114,6 +121,8 @@ canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
 -- | Отобразить состояние игры.
 drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
+  | (isStartMenu gameState) =
+    drawStartMenu (imageStartMenu images) gameState
   | (haveWinner gameState) = pictures        -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
     , drawEnd (imageWinnerWindow images)
@@ -178,6 +187,16 @@ drawGameState images gameState
     player2 = ((players gameState) !! 1)
     player3 = ((players gameState) !! 2)
     player4 = ((players gameState) !! 3)
+
+drawStartMenu :: Picture -> GameState -> Picture
+drawStartMenu image gameState = pictures
+  [ translate 0 0 image
+  , translate x y (scale r r (text countStr))
+  ]
+    where
+      (x, y) = (310, 280)
+      r = 1 / fromIntegral 2
+      countStr = show (countPlayers (stateStartMenu gameState))
 
 -- | Показать, чей сейчас ход
 drawCurrPlayer :: Picture -> GameState -> Picture
@@ -249,6 +268,7 @@ drawPlayingField image = translate 0 0 image
 
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
+  | (isStartMenu gameState) = menuHandle gameState mouse
   | (typeStep gameState) == stepGo = doStep gameState
   | ((typeStep gameState) == stepPay) = case (isPay mouse) of
     Just True -> makePay gameState
@@ -259,6 +279,33 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     Nothing -> gameState
   | otherwise = gameState
 handleGame _ gameState = gameState
+
+menuHandle :: GameState -> Point -> GameState
+menuHandle gameState mouse
+  | (isPlayersCountPlus mouse) = changePlayersCount gameState 1
+  | (isPlayersCountMinus mouse) = changePlayersCount gameState (-1)
+  | (isExitFromMenu mouse) = gameState { isStartMenu = False }
+  | otherwise = gameState
+
+changePlayersCount :: GameState -> Int -> GameState
+changePlayersCount gameState n = gameState { stateStartMenu = (stateStartMenu gameState) { countPlayers = oldCountPlayers + n } }
+  where
+    oldCountPlayers = (countPlayers (stateStartMenu gameState))
+
+isPlayersCountPlus :: Point -> Bool
+isPlayersCountPlus (x, y)
+  | x > 465 && x < 495 && y > 235 && y < 340 = True
+  | otherwise = False
+
+isPlayersCountMinus :: Point -> Bool
+isPlayersCountMinus (x, y)
+  | x > 180 && x < 212 && y > 235 && y < 340 = True
+  | otherwise = False
+
+isExitFromMenu :: Point -> Bool
+isExitFromMenu (x, y)
+   | x > 450 && y < -250  = True
+   | otherwise = False
 
 -- | Смена текущего игрока в gameState
 nextPlayer :: GameState -> Int

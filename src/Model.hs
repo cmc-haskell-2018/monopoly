@@ -17,6 +17,7 @@ data Images = Images
   , imageWinnerWindow :: Picture
   , imageCurrPlayer :: Picture
   , imageCubes :: Picture
+  , imageStartMenu :: Picture
   }
 
 -- | Состояние игры
@@ -25,8 +26,15 @@ data GameState = GameState
   , gamePlayer :: Int   -- Текущий игрок
   , cubes :: Cubes      -- Значения кубиков
   , land :: [Street]    -- Информация о полях
+  , isStartMenu :: Bool
   , typeStep :: Int     -- Тип текущего действия
   , intSeq :: [Int]
+  , stateStartMenu :: StateStartMenu
+  }
+
+data StateStartMenu = StateStartMenu
+  { countPlayers :: Int
+  , playersBegin :: [Player]
   }
 
 -- | Данные об одном игроке
