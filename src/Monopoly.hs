@@ -235,7 +235,7 @@ drawWinnerWindow gameState = translate x y (scale r r (text str))
 
 -- | Отобразить фишки.
 drawPiece :: Picture -> Player -> Picture
-drawPiece image player 
+drawPiece image player
   | (money player >= 0) = translate x y (scale r r image)
   | otherwise = Blank
     where
@@ -282,8 +282,8 @@ handleGame _ gameState = gameState
 
 menuHandle :: GameState -> Point -> GameState
 menuHandle gameState mouse
-  | (isPlayersCountPlus mouse) = changePlayersCount gameState 1
-  | (isPlayersCountMinus mouse) = changePlayersCount gameState (-1)
+  | (isPlayersCountPlus mouse) && (countPlayers (stateStartMenu gameState)) <= 5 = changePlayersCount gameState 1
+  | (isPlayersCountMinus mouse) && (countPlayers (stateStartMenu gameState)) >= 2 = changePlayersCount gameState (-1)
   | (isExitFromMenu mouse) = gameState { isStartMenu = False }
   | otherwise = gameState
 
