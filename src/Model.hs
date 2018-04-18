@@ -8,16 +8,13 @@ import Graphics.Gloss.Interface.Pure.Game
 -- | Изображения объектов.
 
 data Images = Images
-  { imagePieceRed    :: Picture 
-  , imagePieceBlue   :: Picture
-  , imagePieceGreen  :: Picture
-  , imagePieceYellow :: Picture
-  , imagePlayingField :: Picture 
+  { imageStartMenu :: Picture
+  , imagesPiece :: [Picture]
+  , imagePlayingField :: Picture
   , imagePayMenu :: Picture
   , imageWinnerWindow :: Picture
   , imageCurrPlayer :: Picture
   , imageCubes :: Picture
-  , imageStartMenu :: Picture
   }
 
 -- | Состояние игры
@@ -29,17 +26,13 @@ data GameState = GameState
   , isStartMenu :: Bool
   , typeStep :: Int     -- Тип текущего действия
   , intSeq :: [Int]
-  , stateStartMenu :: StateStartMenu
-  }
-
-data StateStartMenu = StateStartMenu
-  { countPlayers :: Int
-  , playersBegin :: [Player]
+  , countPlayers :: Int
   }
 
 -- | Данные об одном игроке
 data Player = Player
-  { colour :: Int      -- Номер игрока
+  { number :: Int
+  , colour :: Int      -- Номер игрока
   --, name :: String
   , money :: Int       -- Баланс
   , property :: [Street]  -- Чем владеет

@@ -2,10 +2,6 @@ module Const where
 
 -- | Некоторые константы для игры
 
--- Кол-во игроков
-playersNumber :: Int
-playersNumber = 4
-
 -- Кол-во полей
 fieldsNumber :: Int
 fieldsNumber = 40
