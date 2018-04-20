@@ -33,6 +33,9 @@ loadImages = do
   Just cubesPic <- loadJuicyPNG "images/cubes.png"
   Just startMenu <- loadJuicyPNG "images/startMenu.png"
   Just moveAcadem <- loadJuicyPNG "images/moveAcadem.png"
+  Just left2 <- loadJuicyPNG "images/left2.png"
+  Just left1 <- loadJuicyPNG "images/left1.png"
+  Just left0 <- loadJuicyPNG "images/left0.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -48,7 +51,12 @@ loadImages = do
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
     , imageCubes = scale 0.6 0.6 cubesPic
-    , imageMoveAcadem = scale 1 1 moveAcadem
+    , imageMoveAcadem = moveAcadem
+    , imagesAcademLeft =
+      [ left0
+      , left1
+      , left2
+      ]
     }
 
 
@@ -218,7 +226,7 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
-    , drawAcademMessage gameState
+    , drawAcademMessage (imagesAcademLeft images) gameState
     ]
   | (typeStep gameState) == stepGo = pictures
     [ drawPlayingField (imagePlayingField images)
@@ -304,13 +312,12 @@ drawMessageAboutIncorrectColours = translate x y (scale r r (color red (text err
     errorStr = "Please, choose different colors!"
     r = 0.2
 
-drawAcademMessage :: GameState -> Picture
-drawAcademMessage gameState = translate x y (scale r r (color blue (text academStr)))
+drawAcademMessage :: [Picture] -> GameState -> Picture
+drawAcademMessage images gameState = translate x y image
     where
-      (x, y) = (-250, 150)
-      academStr = "Left to miss: " ++ show (missSteps player) ++ " steps"
+      (x, y) = (0, 0)
+      image = images !! (missSteps player)
       player = (players gameState) !! (gamePlayer gameState)
-      r = 0.2
 
 drawMoveAcademMessage :: Picture -> Picture
 drawMoveAcademMessage image = translate x y (scale r r image)

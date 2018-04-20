@@ -16,6 +16,7 @@ data Images = Images
   , imageCurrPlayer :: Picture
   , imageCubes :: Picture
   , imageMoveAcadem :: Picture
+  , imagesAcademLeft :: [Picture]
   }
 
 -- | Состояние игры
