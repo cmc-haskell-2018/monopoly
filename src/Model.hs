@@ -27,6 +27,7 @@ data GameState = GameState
   , typeStep :: Int     -- Тип текущего действия
   , intSeq :: [Int]
   , countPlayers :: Int
+  , isIncorrectColours :: Bool
   }
 
 -- | Данные об одном игроке
@@ -64,7 +65,7 @@ getLand =
       , price = 0 
       , isRent = True     -- Для специальных полей, которые нельзя купить - всегда True
       , priceRent = 0
-      , owner = 4         -- Для специальных  полей - фиктивный пятый игрок
+      , owner = 6         -- Для специальных  полей - фиктивный седьмой игрок
       }
     , Street
       { name = "СКИ Квантовая информатика"
@@ -78,7 +79,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street 
       { name = "СКИ Параллельные вычисления"
@@ -91,7 +92,7 @@ getLand =
       { name = "Налог" -- Смотреть описание для "Сверхналога"
       , priceRent = 200
       , price = 0
-      , owner = 4
+      , owner = 6
       , isRent = True
       }
     , Street 
@@ -113,7 +114,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street 
       { name = "СП УДИС"
@@ -134,7 +135,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "МатКиб ДММК"
@@ -183,7 +184,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "ИО Новикова"
@@ -204,7 +205,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "МАТСТАТ Теория рисков"
@@ -218,7 +219,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "МАТСТАТ ДГМС"
@@ -274,7 +275,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street 
       { name = "АЯ Парадигмы программирования"
@@ -295,7 +296,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "АЯ Искусственный интеллект"
@@ -316,7 +317,7 @@ getLand =
       , price = 0
       , isRent = True
       , priceRent = 0
-      , owner = 4
+      , owner = 6
       }
     , Street
       { name = "ММП МАТ"
@@ -329,7 +330,7 @@ getLand =
       { name = "Сверхналог"
       , priceRent = 100
       , price = 0
-      , owner = 4 -- По алгоритму работы никто не сможет купить, потому что isRent = True
+      , owner = 6 -- По алгоритму работы никто не сможет купить, потому что isRent = True
       , isRent = True -- Но при этом все будут платить мнимому 5ому игроку 100$
       }
     , Street
