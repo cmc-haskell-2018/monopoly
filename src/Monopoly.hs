@@ -36,6 +36,7 @@ loadImages = do
   Just left2 <- loadJuicyPNG "images/left2.png"
   Just left1 <- loadJuicyPNG "images/left1.png"
   Just left0 <- loadJuicyPNG "images/left0.png"
+  Just pledgeMenu <- loadJuicyPNG "images/pledgeMenu.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -57,6 +58,7 @@ loadImages = do
       , left1
       , left2
       ]
+    , imagePledgeMenu = pledgeMenu
     }
 
 
@@ -147,6 +149,10 @@ initGame gen = GameState
   , countPlayers = 4
   , isIncorrectColours = False
   , isMoveToAcadem = False
+  , isPledgeMenu = False
+  , menuPledgeState = MenuPledgeState
+    { numCurrentStreet = 0
+    }
   }
 
 canBuy :: GameState -> Bool
@@ -169,6 +175,10 @@ drawGameState images gameState
   | (isStartMenu gameState) = pictures
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) gameState
+    ]
+  | (isPledgeMenu gameState) = pictures
+    [ (imagePledgeMenu images)
+    , drawStreetInfo gameState
     ]
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
@@ -220,22 +230,24 @@ drawGameState images gameState
     , drawCubes gameState
     ] )
   where
-      moneys =
-        [ drawMoney (players gameState) 0 (countPlayers gameState)
-        , drawMoney (players gameState) 1 (countPlayers gameState)
-        , drawMoney (players gameState) 2 (countPlayers gameState)
-        , drawMoney (players gameState) 3 (countPlayers gameState)
-        , drawMoney (players gameState) 4 (countPlayers gameState)
-        , drawMoney (players gameState) 5 (countPlayers gameState)
-        ]
-      pieces =
-        [ drawPiece (imagesPiece images) gameState 0
-        , drawPiece (imagesPiece images) gameState 1
-        , drawPiece (imagesPiece images) gameState 2
-        , drawPiece (imagesPiece images) gameState 3
-        , drawPiece (imagesPiece images) gameState 4
-        , drawPiece (imagesPiece images) gameState 5
-        ]
+    moneys =
+      [ drawMoney (players gameState) 0 (countPlayers gameState)
+      , drawMoney (players gameState) 1 (countPlayers gameState)
+      , drawMoney (players gameState) 2 (countPlayers gameState)
+      , drawMoney (players gameState) 3 (countPlayers gameState)
+      , drawMoney (players gameState) 4 (countPlayers gameState)
+      , drawMoney (players gameState) 5 (countPlayers gameState)
+      ]
+    pieces =
+      [ drawPiece (imagesPiece images) gameState 0
+      , drawPiece (imagesPiece images) gameState 1
+      , drawPiece (imagesPiece images) gameState 2
+      , drawPiece (imagesPiece images) gameState 3
+      , drawPiece (imagesPiece images) gameState 4
+      , drawPiece (imagesPiece images) gameState 5
+      ]
+
+
 -- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
 isInAcadem :: GameState -> Bool
 isInAcadem gameState
@@ -243,6 +255,24 @@ isInAcadem gameState
   | otherwise = False
     where
       player = (players gameState) !! (gamePlayer gameState)
+
+drawStreetInfo :: GameState -> Picture
+drawStreetInfo gameState = pictures
+  [ translate x y (scale 0.6 0.6 (text nameStreet))
+  , translate x2 y2 (scale r r (text pledgePrice))
+  , translate x3 y3 (scale r r (text cancelPledgePrice))
+  , translate x4 y4 (scale r r (text balance))
+  ]
+    where
+      (x, y) = (-350, 150)
+      (x2, y2) = (-200, -200)
+      (x3, y3) = (-200, -260)
+      (x4, y4) = (0, -340)
+      r = 0.2
+      pledgePrice = show (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)
+      cancelPledgePrice = show ((div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4) * 3)
+      balance = show (money ((players gameState) !! (gamePlayer gameState)))
+      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
 
 
 -- | Вывести стартовое меню для выбора количества игроков и фишек
@@ -276,7 +306,6 @@ drawMoveAcademMessage image = translate x y (scale r r image)
   where
     (x, y) = (0, 0)
     r = 1
-
 
 -- | Вывести фишки для их выбора игрокам
 drawPlayersPieces :: [Picture] -> GameState -> Picture
@@ -371,8 +400,10 @@ drawPlayingField image = translate 0 0 image
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isStartMenu gameState) = menuHandle gameState mouse
-  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
-  | (typeStep gameState) == stepGo = doStep gameState
+  | (isPledgeMenu gameState) = pledgeHandle gameState mouse
+  | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
+  | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
+  | (isPledgeFeature mouse) = gameState { isPledgeMenu = True }
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
     Just False -> gameState
@@ -382,6 +413,73 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     Nothing -> gameState
   | otherwise = gameState
 handleGame _ gameState = gameState
+
+isPledgeFeature :: Point -> Bool
+isPledgeFeature (x, y) = (x < -300) && (y < -300)
+
+pledgeHandle :: GameState -> Point -> GameState
+pledgeHandle gameState mouse
+  | (isNextStreetPress mouse) = nextPledgeStreet gameState
+  | (isPrevStreetPress mouse) = prevPledgeStreet gameState
+  | (pledgeStreetPress mouse) = doPledgeStreet gameState
+  | otherwise = gameState
+
+isNextStreetPress :: Point -> Bool
+isNextStreetPress (x, y) = x > 0 && y > 0
+
+isPrevStreetPress :: Point -> Bool
+isPrevStreetPress (x, y) = x < 0 && y > 0
+
+pledgeStreetPress :: Point -> Bool
+pledgeStreetPress (x, y) = x > 0 && y < 0
+
+doPledgeStreet :: GameState -> GameState
+doPledgeStreet gameState
+  | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = gameState
+    { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
+    , players = firstPlayers ++ [changeBalance player ((price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) * (-1))] ++ lastPlayers
+    , isPledgeMenu = False
+    }
+  | otherwise = gameState
+    { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
+    , players = firstPlayers ++ [changeBalance player (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))] ++ lastPlayers
+    , isPledgeMenu = False
+    }
+    where
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = (players gameState) !! (gamePlayer gameState)
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+
+changePledgeStatus :: [Street] -> Int -> [Street]
+changePledgeStatus streets num = firstStreets ++ [street {isPledge = not (isPledge street)}] ++ lastStreets
+  where
+    firstStreets = take num streets
+    street  = streets !! num
+    lastStreets = reverse (take ((length streets) - num - 1) (reverse streets))
+
+nextPledgeStreet :: GameState -> GameState
+nextPledgeStreet gameState = gameState
+  { menuPledgeState = MenuPledgeState
+    { numCurrentStreet = getNextStreetWithOwner (land gameState) (numCurrentStreet (menuPledgeState gameState)) (gamePlayer gameState)
+    }
+  }
+
+prevPledgeStreet :: GameState -> GameState
+prevPledgeStreet gameState = gameState
+  { menuPledgeState = MenuPledgeState
+    { numCurrentStreet = getPrevStreetWithOwner (land gameState) (numCurrentStreet (menuPledgeState gameState)) (gamePlayer gameState)
+    }
+  }
+
+getNextStreetWithOwner :: [Street] -> Int -> Int -> Int
+getNextStreetWithOwner streets currStreet playerNum
+  | (owner (streets !! (mod (currStreet + 1) 40))) == playerNum = mod (currStreet + 1) 40
+  | otherwise = getNextStreetWithOwner streets (mod (currStreet + 1) 40) playerNum
+
+getPrevStreetWithOwner :: [Street] -> Int -> Int -> Int
+getPrevStreetWithOwner streets currStreet playerNum
+  | (owner (streets !! (mod (currStreet - 1 + 40) 40))) == playerNum = mod (currStreet - 1 + 40) 40
+  | otherwise = getPrevStreetWithOwner streets (mod (currStreet - 1 + 40) 40) playerNum
 
 menuHandle :: GameState -> Point -> GameState
 menuHandle gameState mouse
@@ -489,7 +587,7 @@ gameNextPlayer gameState = gameState
 -- | Проверка, закончена игра или нет
 haveWinner :: GameState -> Bool
 haveWinner gameState
-  | (length (filter haveMoney (players gameState))) >= 2 = False
+  | (length (filter haveMoney (take (countPlayers gameState) (players gameState)))) >= 2 = False
   | otherwise = True
 
 haveMoney :: Player -> Bool
@@ -570,7 +668,6 @@ setAcademStatus player = player
   { inAcadem = True
   , missSteps = 2
   }
-
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
