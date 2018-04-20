@@ -293,15 +293,19 @@ makeListCube one two three four five six = [one, two, three, four, five, six]
 drawLeftCube :: GameState -> [Picture] -> Picture
 drawLeftCube gameState pics = translate x y image
   where
-    (x, y) = (150, -200)
+    (x, y) = (fromIntegral (100 + 15 * oneCube + 5 * twoCube), fromIntegral (-120 + 20 * oneCube + 10 * twoCube))
     image = pics !! ((firstCube (cubes gameState)) - 1)
+    oneCube = (firstCube (cubes gameState))
+    twoCube = (secondCube (cubes gameState))
 
 -- | Прорисовка правого кубика
 drawRightCube :: GameState -> [Picture] -> Picture
 drawRightCube gameState pics = translate x y image
   where
-    (x, y) = (-150, 200)
+    (x, y) = (fromIntegral (-120 - 5 * oneCube - 15 * twoCube), fromIntegral (120 - 10 * oneCube - 20 * twoCube))
     image = pics !! ((secondCube (cubes gameState)) - 1) 
+    oneCube = (firstCube (cubes gameState))
+    twoCube = (secondCube (cubes gameState))
 
 -- | Вывести стартовое меню для выбора количества игроков и фишек
 drawStartMenu :: Picture -> GameState -> Picture
