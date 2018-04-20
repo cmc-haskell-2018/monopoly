@@ -32,6 +32,7 @@ loadImages = do
   Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
   Just cubesPic <- loadJuicyPNG "images/cubes.png"
   Just startMenu <- loadJuicyPNG "images/startMenu.png"
+  Just moveAcadem <- loadJuicyPNG "images/moveAcadem.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -47,6 +48,7 @@ loadImages = do
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
     , imageCubes = scale 0.6 0.6 cubesPic
+    , imageMoveAcadem = scale 1 1 moveAcadem
     }
 
 
@@ -136,6 +138,7 @@ initGame gen = GameState
   , isStartMenu = True
   , countPlayers = 4
   , isIncorrectColours = False
+  , isMoveToAcadem = False
   }
 
 canBuy :: GameState -> Bool
@@ -178,6 +181,44 @@ drawGameState images gameState
     , drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
+    ]
+  | (isMoveToAcadem gameState) = pictures
+    [ drawPlayingField (imagePlayingField images)
+    , drawPiece (imagesPiece images) gameState 0
+    , drawPiece (imagesPiece images) gameState 1
+    , drawPiece (imagesPiece images) gameState 2
+    , drawPiece (imagesPiece images) gameState 3
+    , drawPiece (imagesPiece images) gameState 4
+    , drawPiece (imagesPiece images) gameState 5
+    , drawMoney (players gameState) 0 (countPlayers gameState)
+    , drawMoney (players gameState) 1 (countPlayers gameState)
+    , drawMoney (players gameState) 2 (countPlayers gameState)
+    , drawMoney (players gameState) 3 (countPlayers gameState)
+    , drawMoney (players gameState) 4 (countPlayers gameState)
+    , drawMoney (players gameState) 5 (countPlayers gameState)
+    , drawCurrPlayer (imageCurrPlayer images) gameState
+    , drawCubesPic (imageCubes images)
+    , drawCubes gameState
+    , drawMoveAcademMessage (imageMoveAcadem images)
+    ]
+  | (isInAcadem gameState) = pictures
+    [ drawPlayingField (imagePlayingField images)
+    , drawPiece (imagesPiece images) gameState 0
+    , drawPiece (imagesPiece images) gameState 1
+    , drawPiece (imagesPiece images) gameState 2
+    , drawPiece (imagesPiece images) gameState 3
+    , drawPiece (imagesPiece images) gameState 4
+    , drawPiece (imagesPiece images) gameState 5
+    , drawMoney (players gameState) 0 (countPlayers gameState)
+    , drawMoney (players gameState) 1 (countPlayers gameState)
+    , drawMoney (players gameState) 2 (countPlayers gameState)
+    , drawMoney (players gameState) 3 (countPlayers gameState)
+    , drawMoney (players gameState) 4 (countPlayers gameState)
+    , drawMoney (players gameState) 5 (countPlayers gameState)
+    , drawCurrPlayer (imageCurrPlayer images) gameState
+    , drawCubesPic (imageCubes images)
+    , drawCubes gameState
+    , drawAcademMessage gameState
     ]
   | (typeStep gameState) == stepGo = pictures
     [ drawPlayingField (imagePlayingField images)
@@ -235,6 +276,15 @@ drawGameState images gameState
     , drawCubes gameState
     ]
 
+-- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
+isInAcadem :: GameState -> Bool
+isInAcadem gameState
+  | (inAcadem player) = True
+  | otherwise = False
+    where
+      player = (players gameState) !! (gamePlayer gameState)
+
+
 -- | Вывести стартовое меню для выбора количества игроков и фишек
 drawStartMenu :: Picture -> GameState -> Picture
 drawStartMenu image gameState = pictures
@@ -253,6 +303,21 @@ drawMessageAboutIncorrectColours = translate x y (scale r r (color red (text err
     (x, y) = (150, 0)
     errorStr = "Please, choose different colors!"
     r = 0.2
+
+drawAcademMessage :: GameState -> Picture
+drawAcademMessage gameState = translate x y (scale r r (color blue (text academStr)))
+    where
+      (x, y) = (-250, 150)
+      academStr = "Left to miss: " ++ show (missSteps player) ++ " steps"
+      player = (players gameState) !! (gamePlayer gameState)
+      r = 0.2
+
+drawMoveAcademMessage :: Picture -> Picture
+drawMoveAcademMessage image = translate x y (scale r r image)
+  where
+    (x, y) = (0, 0)
+    r = 1
+
 
 -- | Вывести фишки для их выбора игрокам
 drawPlayersPieces :: [Picture] -> GameState -> Picture
@@ -287,7 +352,7 @@ drawMoney allPlayers num maxCount
   | otherwise = translate x y (scale r r (color red (text noMoneyStr)))
     where
       (x, y) = (-630, 400 - 50 * (fromIntegral (number player)))
-      moneyStr = "Player " ++ numberStr ++ ": " ++ show (money player) ++ "-" ++ show (missSteps player)
+      moneyStr = "Player " ++ numberStr ++ ": " ++ show (money player) ++ "-" ++ show (missSteps player) -- !!!  отладочный вывод missSteps для академа - убрать потом
       r = 1 / fromIntegral 5
       numberStr = show (number player)
       noMoneyStr = "Player " ++ numberStr ++ ": lost"
@@ -347,8 +412,9 @@ drawPlayingField image = translate 0 0 image
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isStartMenu gameState) = menuHandle gameState mouse
+  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo = doStep gameState
-  | ((typeStep gameState) == stepPay) = case (isPay mouse) of
+  | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
     Just False -> gameState
       { typeStep = stepGo
@@ -457,7 +523,9 @@ nextPlayer gameState
       nextNum = mod ((gamePlayer gameState) + 1) (countPlayers gameState)
 
 gameNextPlayer :: GameState -> GameState
-gameNextPlayer gameState = gameState { gamePlayer = nextPlayer gameState }
+gameNextPlayer gameState = gameState
+  { gamePlayer = nextPlayer gameState }
+
 
 -- | Проверка, закончена игра или нет
 haveWinner :: GameState -> Bool
@@ -479,7 +547,7 @@ isPay (x, y) | x < 0 && x > -100 && y > -50 && y < 50 = Just True
 -- =======================================
 doStep :: GameState -> GameState
 doStep gameState | (haveWinner gameState) = gameState
-                 | (inAcadem player) = gameNextPlayer (changeAcademStatus gameState)  --потом добавлю: если игрок в академе, то показывалось, сколько ему еще осталось пропустить
+                 | (inAcadem player) = gameNextPlayer (changeAcademStatus gameState)
                  | (money prevPlayer) < 0 = makeMove (returnBoughtPlace gameState)
                  | otherwise = makeMove gameState
   where
@@ -504,10 +572,6 @@ deletePlace :: [Street] -> Int -> [Street]
 deletePlace [] _ = []
 deletePlace (x:xs) num | (owner x) == num = (x {isRent = False} : (deletePlace xs num))
                        | otherwise = (x : (deletePlace xs num))
-{--
-canGo :: GameState -> Bool
-canGo gameState = True
---}
 
 -- | Переместиться и выполнить действия
 makeMove :: GameState -> GameState
@@ -517,12 +581,15 @@ makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
-  | currField == 30 = (gameNextPlayer (moveToAcadem gameState))
+  | currField == 30 =  (changeIsMoveToAcadem (moveToAcadem gameState))
   | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
     where
       currField = (playerCell player)
       player = (players gameState) !! (gamePlayer gameState)
+
+changeIsMoveToAcadem :: GameState -> GameState
+changeIsMoveToAcadem gameState = gameState { isMoveToAcadem = True }
 
 moveToAcadem :: GameState -> GameState
 moveToAcadem gameState = gameState
@@ -542,7 +609,7 @@ setPlayerCell player cell = player
 setAcademStatus :: Player -> Player
 setAcademStatus player = player
   { inAcadem = True
-  , missSteps = 3
+  , missSteps = 2
   }
 
 

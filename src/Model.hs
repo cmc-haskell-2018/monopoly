@@ -15,6 +15,7 @@ data Images = Images
   , imageWinnerWindow :: Picture
   , imageCurrPlayer :: Picture
   , imageCubes :: Picture
+  , imageMoveAcadem :: Picture
   }
 
 -- | Состояние игры
@@ -28,6 +29,7 @@ data GameState = GameState
   , intSeq :: [Int]
   , countPlayers :: Int
   , isIncorrectColours :: Bool
+  , isMoveToAcadem :: Bool
   }
 
 -- | Данные об одном игроке
