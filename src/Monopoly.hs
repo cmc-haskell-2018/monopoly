@@ -235,6 +235,7 @@ drawGameState images gameState
     , drawCubes gameState
     ]
 
+-- | Вывести стартовое меню для выбора количества игроков и фишек
 drawStartMenu :: Picture -> GameState -> Picture
 drawStartMenu image gameState = pictures
   [ translate 0 0 image
@@ -245,6 +246,7 @@ drawStartMenu image gameState = pictures
       r = 1 / fromIntegral 2
       countStr = show (countPlayers gameState)
 
+-- | Вывести сообщение об ошибке, если есть одинаковые цвета у фишек
 drawMessageAboutIncorrectColours :: Picture
 drawMessageAboutIncorrectColours = translate x y (scale r r (color red (text errorStr)))
   where
@@ -252,6 +254,7 @@ drawMessageAboutIncorrectColours = translate x y (scale r r (color red (text err
     errorStr = "Please, choose different colors!"
     r = 0.2
 
+-- | Вывести фишки для их выбора игрокам
 drawPlayersPieces :: [Picture] -> GameState -> Picture
 drawPlayersPieces images gameState = pictures
   [ translate x1 y1 (scale 2 2 (images !! ((colour ((players gameState) !! 0)) - 1)))
@@ -378,14 +381,17 @@ menuHandle gameState mouse
       playerMinus = (players gameState) !! ((colourMinus mouse) - 1)
       lastPlayersMinus = reverse (take ((length (players gameState)) - (length firstPlayersMinus) - 1) (reverse (players gameState)))
 
+-- | У игрока сменить цвет его фишки на следующий
 changePlayerColour :: Player -> Int -> Player
 changePlayerColour player num = player { colour = (mod ((colour player) - 1 + num) 6) + 1 }
 
+-- | Изменить количество игроков на заданное значение (на +1 или -1)
 changePlayersCount :: GameState -> Int -> GameState
 changePlayersCount gameState n = gameState { countPlayers = oldCountPlayers + n }
   where
     oldCountPlayers = (countPlayers gameState)
 
+-- | Проверка, корректно ли выбраны цвета для фишек игроков (нет ли повторяющихся)
 correctColours :: GameState -> Int -> Bool
 correctColours gameState num
   | num == (countPlayers gameState) - 1 = True
@@ -396,22 +402,26 @@ correctColours gameState num
       lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
       player = (players gameState) !! num
 
+-- | Проверка, что в списке игроков нет игрока, с таким же цветом фишки
 haveSame :: [Player] -> Player -> Bool
 haveSame [] _ = False
 haveSame (pl:pls) player
   | (colour pl) == (colour player) = True
   | otherwise = haveSame pls player
 
+-- | Проверка, была ли нажата клавиша для увелечения количества игроков
 isPlayersCountPlus :: Point -> Bool
 isPlayersCountPlus (x, y)
   | x > 465 && x < 495 && y > 235 && y < 340 = True
   | otherwise = False
 
+-- | ------||------- для уменьшения количества игроков
 isPlayersCountMinus :: Point -> Bool
 isPlayersCountMinus (x, y)
   | x > 180 && x < 212 && y > 235 && y < 340 = True
   | otherwise = False
 
+-- |-------||------- для выхода из меню
 isExitFromMenu :: Point -> Bool
 isExitFromMenu (x, y)
    | x > 220 && x < 450 && y < -50 && y > -150 = True
