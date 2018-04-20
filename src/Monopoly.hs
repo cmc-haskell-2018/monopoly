@@ -170,120 +170,72 @@ drawGameState images gameState
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) gameState
     ]
-  | (haveWinner gameState) = pictures        -- Если игра закончена и есть победитель
+  | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
     , drawEnd (imageWinnerWindow images)
     , drawWinnerWindow gameState
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ]
+    ++ pieces ++ moneys ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
-    ]
-  | (isMoveToAcadem gameState) = pictures
-    [ drawPlayingField (imagePlayingField images)
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ] )
+  | (isMoveToAcadem gameState) = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
-    ]
-  | (isInAcadem gameState) = pictures
-    [ drawPlayingField (imagePlayingField images)
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ] )
+  | (isInAcadem gameState) = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
-    ]
-  | (typeStep gameState) == stepGo = pictures
-    [ drawPlayingField (imagePlayingField images)
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ] )
+  | (typeStep gameState) == stepGo = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
-    ]
-  | (typeStep gameState) == stepPay = pictures      -- Меню для совершения покупки
+    ] )
+  | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     [ drawPlayingField (imagePlayingField images)
     , drawPayMenu (imagePayMenu images)
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
-    ]
-  | otherwise = pictures
-    [ drawPlayingField (imagePlayingField images)
-    , drawPiece (imagesPiece images) gameState 0
-    , drawPiece (imagesPiece images) gameState 1
-    , drawPiece (imagesPiece images) gameState 2
-    , drawPiece (imagesPiece images) gameState 3
-    , drawPiece (imagesPiece images) gameState 4
-    , drawPiece (imagesPiece images) gameState 5
-    , drawMoney (players gameState) 0 (countPlayers gameState)
-    , drawMoney (players gameState) 1 (countPlayers gameState)
-    , drawMoney (players gameState) 2 (countPlayers gameState)
-    , drawMoney (players gameState) 3 (countPlayers gameState)
-    , drawMoney (players gameState) 4 (countPlayers gameState)
-    , drawMoney (players gameState) 5 (countPlayers gameState)
-    , drawCurrPlayer (imageCurrPlayer images) gameState
+    ] )
+  | otherwise = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawCubesPic (imageCubes images)
     , drawCubes gameState
-    ]
-
+    ] )
+  where
+      moneys =
+        [ drawMoney (players gameState) 0 (countPlayers gameState)
+        , drawMoney (players gameState) 1 (countPlayers gameState)
+        , drawMoney (players gameState) 2 (countPlayers gameState)
+        , drawMoney (players gameState) 3 (countPlayers gameState)
+        , drawMoney (players gameState) 4 (countPlayers gameState)
+        , drawMoney (players gameState) 5 (countPlayers gameState)
+        ]
+      pieces =
+        [ drawPiece (imagesPiece images) gameState 0
+        , drawPiece (imagesPiece images) gameState 1
+        , drawPiece (imagesPiece images) gameState 2
+        , drawPiece (imagesPiece images) gameState 3
+        , drawPiece (imagesPiece images) gameState 4
+        , drawPiece (imagesPiece images) gameState 5
+        ]
 -- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
 isInAcadem :: GameState -> Bool
 isInAcadem gameState
