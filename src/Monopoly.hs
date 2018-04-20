@@ -30,12 +30,17 @@ loadImages = do
   Just payMenu <- loadJuicyPNG "images/payMenu.png"
   Just endWindow <- loadJuicyPNG "images/end.png"
   Just currPlayer <- loadJuicyPNG "images/currPlayer.png"
-  Just cubesPic <- loadJuicyPNG "images/cubes.png"
   Just startMenu <- loadJuicyPNG "images/startMenu.png"
   Just moveAcadem <- loadJuicyPNG "images/moveAcadem.png"
   Just left2 <- loadJuicyPNG "images/left2.png"
   Just left1 <- loadJuicyPNG "images/left1.png"
   Just left0 <- loadJuicyPNG "images/left0.png"
+  Just cubesOne <- loadJuicyPNG "images/1.png"
+  Just cubesTwo <- loadJuicyPNG "images/2.png"
+  Just cubesThree <- loadJuicyPNG "images/3.png"
+  Just cubesFour <- loadJuicyPNG "images/4.png"
+  Just cubesFive <- loadJuicyPNG "images/5.png"
+  Just cubesSix <- loadJuicyPNG "images/6.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -50,13 +55,18 @@ loadImages = do
     , imagePayMenu = scale 0.6 0.6 payMenu
     , imageWinnerWindow = scale 0.8 0.8 endWindow
     , imageCurrPlayer = scale 0.2 0.2 currPlayer
-    , imageCubes = scale 0.6 0.6 cubesPic
     , imageMoveAcadem = moveAcadem
     , imagesAcademLeft =
       [ left0
       , left1
       , left2
       ]
+    , imageCubesOne = scale 0.3 0.3 cubesOne
+    , imageCubesTwo = scale 0.3 0.3 cubesTwo
+    , imageCubesThree = scale 0.3 0.3 cubesThree
+    , imageCubesFour = scale 0.3 0.3 cubesFour
+    , imageCubesFive = scale 0.3 0.3 cubesFive
+    , imageCubesSix = scale 0.3 0.3 cubesSix
     }
 
 
@@ -177,31 +187,31 @@ drawGameState images gameState
     ]
     ++ pieces ++ moneys ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (isMoveToAcadem gameState) = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (isInAcadem gameState) = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (typeStep gameState) == stepGo = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     [ drawPlayingField (imagePlayingField images)
@@ -209,15 +219,16 @@ drawGameState images gameState
     ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images)), drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | otherwise = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawCubesPic (imageCubes images)
-    , drawCubes gameState
+    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   where
       moneys =
@@ -244,6 +255,20 @@ isInAcadem gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
 
+makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
+makeListCube one two three four five six = [one, two, three, four, five, six] 
+
+drawLeftCube :: GameState -> [Picture] -> Picture
+drawLeftCube gameState pics = translate x y image
+  where
+    (x, y) = (150, -200)
+    image = pics !! ((firstCube (cubes gameState)) - 1)
+
+drawRightCube :: GameState -> [Picture] -> Picture
+drawRightCube gameState pics = translate x y image
+  where
+    (x, y) = (-150, 200)
+    image = pics !! ((secondCube (cubes gameState)) - 1) 
 
 -- | Вывести стартовое меню для выбора количества игроков и фишек
 drawStartMenu :: Picture -> GameState -> Picture

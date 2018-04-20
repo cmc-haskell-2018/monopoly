@@ -14,9 +14,14 @@ data Images = Images
   , imagePayMenu :: Picture
   , imageWinnerWindow :: Picture
   , imageCurrPlayer :: Picture
-  , imageCubes :: Picture
   , imageMoveAcadem :: Picture
   , imagesAcademLeft :: [Picture]
+  , imageCubesOne :: Picture
+  , imageCubesTwo :: Picture
+  , imageCubesThree :: Picture
+  , imageCubesFour :: Picture
+  , imageCubesFive :: Picture
+  , imageCubesSix :: Picture
   }
 
 -- | Состояние игры
