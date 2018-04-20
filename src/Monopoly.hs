@@ -255,15 +255,18 @@ isInAcadem gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
 
+-- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
 makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
 makeListCube one two three four five six = [one, two, three, four, five, six] 
 
+-- | Прорисовка левого кубика
 drawLeftCube :: GameState -> [Picture] -> Picture
 drawLeftCube gameState pics = translate x y image
   where
     (x, y) = (150, -200)
     image = pics !! ((firstCube (cubes gameState)) - 1)
 
+-- | Прорисовка правого кубика
 drawRightCube :: GameState -> [Picture] -> Picture
 drawRightCube gameState pics = translate x y image
   where
@@ -557,9 +560,20 @@ deletePlace [] _ = []
 deletePlace (x:xs) num | (owner x) == num = (x {isRent = False} : (deletePlace xs num))
                        | otherwise = (x : (deletePlace xs num))
 
+-- | Деньги за проход через ячейку "Старт"
+startMoney :: GameState -> GameState
+startMoney gameState | (cell + cubesSum) >= 40 = gameState { players = firstPlayers ++ [(changeBalance player 200)] ++ lastPlayers}
+                     | otherwise = gameState
+  where
+    player = (players gameState) !! (gamePlayer gameState)
+    cell = (playerCell player)
+    cubesSum = (firstCube (cubes gameState)) + (secondCube (cubes gameState))    
+    firstPlayers = take (gamePlayer gameState) (players gameState)
+    lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+
 -- | Переместиться и выполнить действия
 makeMove :: GameState -> GameState
-makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState)))
+makeMove gameState = (makeStepFeatures (changePlayerCell (startMoney (throwCubes gameState))))
 
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
