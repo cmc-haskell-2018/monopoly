@@ -437,7 +437,6 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
   | (isPledgeFeature mouse) = nextPledgeStreet (gameState { isPledgeMenu = True })
-  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo = doStep gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
