@@ -17,12 +17,7 @@ data Images = Images
   , imageMoveAcadem :: Picture
   , imagesAcademLeft :: [Picture]
   , imagePledgeMenu :: Picture
-  , imageCubesOne :: Picture
-  , imageCubesTwo :: Picture
-  , imageCubesThree :: Picture
-  , imageCubesFour :: Picture
-  , imageCubesFive :: Picture
-  , imageCubesSix :: Picture
+  , imagesCube :: [Picture]
   }
 
 -- | Состояние игры

@@ -63,12 +63,14 @@ loadImages = do
       , left2
       ]
     , imagePledgeMenu = pledgeMenu
-    , imageCubesOne = scale 0.3 0.3 cubesOne
-    , imageCubesTwo = scale 0.3 0.3 cubesTwo
-    , imageCubesThree = scale 0.3 0.3 cubesThree
-    , imageCubesFour = scale 0.3 0.3 cubesFour
-    , imageCubesFive = scale 0.3 0.3 cubesFive
-    , imageCubesSix = scale 0.3 0.3 cubesSix
+    , imagesCube =
+      [ scale 0.3 0.3 cubesOne
+      , scale 0.3 0.3 cubesTwo
+      , scale 0.3 0.3 cubesThree
+      , scale 0.3 0.3 cubesFour
+      , scale 0.3 0.3 cubesFive
+      , scale 0.3 0.3 cubesSix
+      ]
     }
 
 
@@ -192,36 +194,36 @@ drawGameState images gameState
     ]
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images)
     , drawEnd (imageWinnerWindow images)
     , drawWinnerWindow gameState
     ]
     ++ pieces ++ moneys ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (isMoveToAcadem gameState) = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
+    [ drawPlayingField (imagePlayingField images) 
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (isInAcadem gameState) = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
+    [ drawPlayingField (imagePlayingField images)
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
     ] )
   | (typeStep gameState) == stepGo = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images)
     ] )
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     [ drawPlayingField (imagePlayingField images)
@@ -229,16 +231,15 @@ drawGameState images gameState
     ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images)), drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images)
     ] )
   | otherwise = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
-    , drawRightCube gameState (makeListCube (imageCubesOne images) (imageCubesTwo images) (imageCubesThree images) (imageCubesFour images) (imageCubesFive images) (imageCubesSix images))
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images)
     ] )
   where
     moneys =
@@ -428,23 +429,25 @@ drawPlayingField image = translate 0 0 image
 -- =========================================
 -- Обработка событий
 -- =========================================
-
+-- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isStartMenu gameState) = menuHandle gameState mouse
-  | (isPledgeMenu gameState) = pledgeHandle gameState mouse
-  | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
-  | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
-  | (isPledgeFeature mouse) = gameState { isPledgeMenu = True }
+  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
+  | (typeStep gameState) == stepGo = doStep gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
-    Just False -> gameState
+    Just False -> (auction gameState)
       { typeStep = stepGo
       , gamePlayer = nextPlayer gameState
       }
     Nothing -> gameState
   | otherwise = gameState
 handleGame _ gameState = gameState
+
+-- Засунь сюда новый вид степа, выводить сообщение красивое
+auction :: GameState -> GameState
+auction gameState = gameState 
 
 isPledgeFeature :: Point -> Bool
 isPledgeFeature (x, y) = (x < -300) && (y < -300)
