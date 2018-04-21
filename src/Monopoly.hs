@@ -174,98 +174,10 @@ initGame gen = GameState
     }
   }
 
-updateGame :: GameState -> GameState
-updateGame gameState = gameState 
-  { players =
-    [ Player
-      { number = 1
-      , colour = 1
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 1 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player
-      { number = 2
-      , colour = 2
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 2 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player
-      { number = 3
-      , colour = 3
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 3 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player
-      { number = 4
-      , colour = 4
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 4 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player
-      { number = 5
-      , colour = 5
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 5 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player
-      { number = 6
-      , colour = 6
-      , money = 500
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 6 0
-      , inAcadem = False
-      , missSteps = 0
-      }
-    , Player -- Фиктивный игрок
-      { number = 7
-      , colour = 7
-      , money = 0
-      , property = []
-      , playerCell = 0
-      , playerPosition = getPlayerPosition 7 1
-      , inAcadem = False
-      , missSteps = 0
-      }
-    ]
-  , cubes = Cubes
-    { firstCube = 1
-    , secondCube = 1
-    }
-  , gamePlayer = 0 -- Чей сейчас ход
-  , typeStep = stepGo -- Тип текущего шага
-  , land = getLand
-  , isStartMenu = True
-  , countPlayers = 4
-  , isIncorrectColours = False
-  , isMoveToAcadem = False
-  , isPledgeMenu = False
-  , menuPledgeState = MenuPledgeState
-    { numCurrentStreet = 0
-    }
-  }
-
-
+canBuy :: GameState -> Bool
+canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
+  where
+    player = (players gameState) !! (gamePlayer gameState)
 
 -- =========================================
 -- Функции отрисовки
@@ -614,7 +526,6 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
-  | (haveWinner gameState) && (isAgainPlay mouse) = (updateGame gameState)
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isAuction gameState) = auctionHandle gameState mouse
@@ -640,10 +551,22 @@ auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState
                               | otherwise = gameState
 
 isNextSumPress :: Point -> Int
-isNextSumPress (x, y) = -1
+isNextSumPress (x, y) | (x >= -50) && (x <= 0) && (y > 50) && (y <= 75) = 1
+                      | (x >= -50) && (x <= 0) && (y > 0) && (y <= 45) = 2
+                      | (x >= -50) && (x <= 0) && (y > -45) && (y < 5) = 3
+                      | (x >= -50) && (x <= 0) && (y > -75) && (y < -50) = 4
+                      | (x >= -50) && (x <= 0) && (y > -125) && (y < -75) = 5
+                      | (x >= -50) && (x <= 0) && (y > -150) && (y < -125) = 6
+                      | otherwise = 0
 
 isPrevSumPress :: Point -> Int
-isPrevSumPress (x, y) = -1
+isPrevSumPress (x, y) | (x >= 200) && (x <= 230) && (y > 50) && (y <= 75) = 1
+                      | (x >= 200) && (x <= 230) && (y > 0) && (y <= 45) = 2
+                      | (x >= 200) && (x <= 230) && (y > -45) && (y < 5) = 3
+                      | (x >= 200) && (x <= 230) && (y > -75) && (y < -50) = 4
+                      | (x >= 200) && (x <= 230) && (y > -125) && (y < -75) = 5
+                      | (x >= 200) && (x <= 230) && (y > -150) && (y < -125) = 6
+                      | otherwise = 0
 
 isExitFromAuction :: Point -> Bool
 isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= 0) = True
@@ -655,9 +578,6 @@ nextSum gameState = gameState
 prevSum :: GameState -> GameState
 prevSum gameState = gameState
 
-
-isAgainPlay :: Point -> Bool
-isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
 
 -- | Если во время хода игрок нажал на клавишу, чтобы совершить залог
 isPledgeFeature :: Point -> Bool
@@ -901,21 +821,11 @@ makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
   | currField == 30 =  (changeIsMoveToAcadem (moveToAcadem gameState))
-  | not (canBuy gameState) && (canGetRent gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
+  | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
     where
       currField = (playerCell player)
       player = (players gameState) !! (gamePlayer gameState)
-
-canBuy :: GameState -> Bool
-canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
-  where
-    player = (players gameState) !! (gamePlayer gameState)
-
-canGetRent :: GameState -> Bool
-canGetRent gameState = not (isPledge ((land gameState) !! (playerCell player)))
-  where
-    player = (players gameState) !! (gamePlayer gameState)
 
 changeIsMoveToAcadem :: GameState -> GameState
 changeIsMoveToAcadem gameState = gameState { isMoveToAcadem = True }
