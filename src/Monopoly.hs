@@ -44,6 +44,7 @@ loadImages = do
   Just cubesFive <- loadJuicyPNG "images/5.png"
   Just cubesSix <- loadJuicyPNG "images/6.png"
   Just pledgeButton <- loadJuicyPNG "images/pledgeButton.png"
+  Just empty <- loadJuicyPNG "images/empty.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -74,6 +75,7 @@ loadImages = do
       , scale 0.3 0.3 cubesSix
       ]
     , imagePledgeButton = pledgeButton
+    , imageEmpty = empty
     }
 
 -- | Сгенерировать начальное состояние игры.
@@ -183,13 +185,13 @@ drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
   | (isStartMenu gameState) && (isIncorrectColours gameState) = pictures
     [ drawStartMenu (imageStartMenu images) gameState
-    , drawPlayersPieces (imagesPiece images) gameState
+    , drawPlayersPieces (imagesPiece images) (imageEmpty images) gameState
     , drawMessageAboutIncorrectColours
     , drawNet
     ]
   | (isStartMenu gameState) = pictures
     [ drawStartMenu (imageStartMenu images) gameState
-    , drawPlayersPieces (imagesPiece images) gameState
+    , drawPlayersPieces (imagesPiece images) (imageEmpty images) gameState
     , drawNet
     ]
   | (isPledgeMenu gameState) = pictures
@@ -419,14 +421,22 @@ drawMoveAcademMessage image = translate x y (scale r r image)
     r = 1
 
 -- | Вывести фишки для их выбора игрокам
-drawPlayersPieces :: [Picture] -> GameState -> Picture
-drawPlayersPieces images gameState = pictures
+drawPlayersPieces :: [Picture] -> Picture -> GameState -> Picture
+drawPlayersPieces images empty gameState = pictures
   [ translate x1 y1 (scale 2 2 (images !! ((colour ((players gameState) !! 0)) - 1)))
   , translate x2 y2 (scale 2 2 (images !! ((colour ((players gameState) !! 1)) - 1)))
-  , translate x3 y3 (scale 2 2 (images !! ((colour ((players gameState) !! 2)) - 1)))
-  , translate x4 y4 (scale 2 2 (images !! ((colour ((players gameState) !! 3)) - 1)))
-  , translate x5 y5 (scale 2 2 (images !! ((colour ((players gameState) !! 4)) - 1)))
-  , translate x6 y6 (scale 2 2 (images !! ((colour ((players gameState) !! 5)) - 1)))
+  , if ((countPlayers gameState) > 2)
+      then translate x3 y3 (scale 2 2 (images !! ((colour ((players gameState) !! 2)) - 1)))
+      else translate (x3 - 150) y3 (scale 0.8 0.6 empty)
+  , if ((countPlayers gameState) > 3)
+      then translate x4 y4 (scale 2 2 (images !! ((colour ((players gameState) !! 3)) - 1)))
+      else translate (x4 - 150) y4 (scale 0.8 0.6 empty)
+  , if ((countPlayers gameState) > 4)
+      then translate x5 y5 (scale 2 2 (images !! ((colour ((players gameState) !! 4)) - 1)))
+      else translate (x5 - 150) y5 (scale 0.8 0.6 empty)
+  , if ((countPlayers gameState) > 5)
+      then translate x6 y6 (scale 2 2 (images !! ((colour ((players gameState) !! 5)) - 1)))
+      else translate (x6 - 150) y6 (scale 0.8 0.6 empty)
   ]
     where
       (x1, y1) = (-30, 110)
@@ -532,7 +542,7 @@ auction gameState = gameState
 
 -- | Если во время хода игрок нажал на клавишу, чтобы совершить залог
 isPledgeFeature :: Point -> Bool
-isPledgeFeature (x, y) = (x < -400) && (y < -220)
+isPledgeFeature (x, y) = x < -400 && y < -220
 
 pledgeHandle :: GameState -> Point -> GameState
 pledgeHandle gameState mouse
@@ -552,7 +562,7 @@ isPrevStreetPress (x, y) = x < -520 && x > -575 && y > 150 && y < 250
 
 -- | Совершить действие залога и вернуться в игру
 pledgeStreetPress :: Point -> Bool
-pledgeStreetPress (x, y) = x < 0 && y < 0
+pledgeStreetPress (x, y) = y > -75 && y < 75 && x < 100 && x > -350
 
 exitFromPledgeMenu :: Point -> Bool
 exitFromPledgeMenu (x, y) = x > 0 && y < 0

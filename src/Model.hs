@@ -19,6 +19,7 @@ data Images = Images
   , imagePledgeMenu :: Picture
   , imagesCube :: [Picture]
   , imagePledgeButton :: Picture
+  , imageEmpty :: Picture
   }
 
 -- | Состояние игры
