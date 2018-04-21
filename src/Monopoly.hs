@@ -484,8 +484,8 @@ drawEnd image = translate 0 0  image
 drawWinnerWindow :: GameState -> Picture
 drawWinnerWindow gameState = translate x y (scale r r (text str))
   where
-    (x, y) = (-130, -150)
-    r = 1 / fromIntegral 2
+    (x, y) = (40, 12)
+    r = 1 / fromIntegral 3
     numberStr = show ((nextPlayer gameState) + 1)
     str = "Player " ++ numberStr
 
@@ -753,7 +753,6 @@ nextPlayer gameState
 gameNextPlayer :: GameState -> GameState
 gameNextPlayer gameState = gameState
   { gamePlayer = nextPlayer gameState }
-
 
 -- | Проверка, закончена игра или нет
 haveWinner :: GameState -> Bool
