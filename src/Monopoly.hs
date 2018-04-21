@@ -45,6 +45,7 @@ loadImages = do
   Just cubesSix <- loadJuicyPNG "images/6.png"
   Just pledgeButton <- loadJuicyPNG "images/pledgeButton.png"
   Just empty <- loadJuicyPNG "images/empty.png"
+  Just auctionPic <- loadJuicyPNG "images/auction.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -76,6 +77,7 @@ loadImages = do
       ]
     , imagePledgeButton = pledgeButton
     , imageEmpty = empty
+    , imageAuction = scale 1 1 auctionPic
     }
 
 -- | Сгенерировать начальное состояние игры.
@@ -166,6 +168,7 @@ initGame gen = GameState
   , isIncorrectColours = False
   , isMoveToAcadem = False
   , isPledgeMenu = False
+  , isAuction = False
   , menuPledgeState = MenuPledgeState
     { numCurrentStreet = 0
     }
@@ -199,6 +202,9 @@ drawGameState images gameState
     , drawStreetInfo gameState
     , drawNet
     ]
+  | (isAuction gameState) = pictures (
+    [ drawAuction gameState (imageAuction images) 
+    , drawNet] ++ moneys)
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
     , drawLeftCube gameState (imagesCube images)
@@ -325,6 +331,9 @@ drawNet = pictures
   , line [(-500, 300), (500, 300)]
   ]
 
+drawAuction :: GameState -> Picture -> Picture
+drawAuction gameState image = translate 0 0 image
+
 -- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
 isInAcadem :: GameState -> Bool
 isInAcadem gameState
@@ -358,9 +367,6 @@ drawStreetInfo gameState
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
       nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
 
--- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
-makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
-makeListCube one two three four five six = [one, two, three, four, five, six] 
 
 drawPledgeButton :: Picture -> Picture
 drawPledgeButton image = translate x y (scale r r image)
@@ -528,17 +534,37 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (typeStep gameState) == stepGo = doStep gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
-    Just False -> (auction gameState)
+    Just False -> gameState
       { typeStep = stepGo
       , gamePlayer = nextPlayer gameState
+      , isAuction = True
       }
     Nothing -> gameState
   | otherwise = gameState
 handleGame _ gameState = gameState
 
--- Засунь сюда новый вид степа, выводить сообщение красивое
-auction :: GameState -> GameState
-auction gameState = gameState
+auctionHandle :: GameState -> Point -> GameState
+auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState
+                              | (isPrevSumPress mouse) > 0 = prevSum gameState
+                              | (isExitFromAuction mouse) = gameState {isAuction = False}
+                              | otherwise = gameState
+
+isNextSumPress :: Point -> Int
+isNextSumPress (x, y) = 0
+
+isPrevSumPress :: Point -> Int
+isPrevSumPress (x, y) = 0
+
+isExitFromAuction :: Point -> Bool
+isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= -50) = True
+                         | otherwise = False
+
+nextSum :: GameState -> GameState
+nextSum gameState = gameState
+
+prevSum :: GameState -> GameState
+prevSum gameState = gameState
+
 
 -- | Если во время хода игрок нажал на клавишу, чтобы совершить залог
 isPledgeFeature :: Point -> Bool

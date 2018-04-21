@@ -20,6 +20,7 @@ data Images = Images
   , imagesCube :: [Picture]
   , imagePledgeButton :: Picture
   , imageEmpty :: Picture
+  , imageAuction :: Picture
   }
 
 -- | Состояние игры
@@ -36,6 +37,7 @@ data GameState = GameState
   , isMoveToAcadem :: Bool
   , menuPledgeState :: MenuPledgeState
   , isPledgeMenu :: Bool
+  , isAuction :: Bool
   }
 
 data MenuPledgeState = MenuPledgeState
