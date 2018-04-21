@@ -90,6 +90,9 @@ initGame gen = GameState
   , typeStep = stepGo -- Тип текущего шага
   , land = getLand
   , intSeq = randomRs (1,6) gen
+  , chanceCards = getChanceCards
+  , intSeqChanceCards = randomRs (0, 1) gen
+  , currentChanceCard = 0
   }
 
 canBuy :: GameState -> Bool
@@ -305,10 +308,30 @@ makeMove gameState = (makeStepFeatures (changePlayerCell (throwCubes gameState))
 
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
+  | (isChanceLand gameState) = gameNextPlayer (applyChance (changeChanceCardNumber gameState)) 
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
   | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
+
+-- | True, если текущее поле - "Шанс"
+isChanceLand :: GameState -> Bool
+--isChanceLand gameState = (name ((land gameState) !! (playerCell player))) == "Шанс"
+isChanceLand gameState = True
+    where
+      player = (players gameState) !! (gamePlayer gameState)
+
+-- | Применить карточку шанс
+applyChance :: GameState -> GameState
+applyChance gameState = gameState 
+  { players = firstPlayers ++ [(changeBalance player (balanceChange ((chanceCards gameState) !! chanceCardNumber)))] ++ lastPlayers
+  }
+    where
+      chanceCardNumber = (currentChanceCard gameState)
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = (players gameState) !! (gamePlayer gameState)
+      lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
+    
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
@@ -363,6 +386,17 @@ throwCubes gameState =
       , secondCube = second
       }
     , intSeq = nextList
+    }
+
+changeChanceCardNumber :: GameState -> GameState
+changeChanceCardNumber gameState =
+  let
+    list = intSeqChanceCards gameState
+    number = head list
+    nextList = drop 1 list
+  in gameState
+    { currentChanceCard = number
+    , intSeqChanceCards = nextList
     }
 
 -- | Совершение покупки спецсеминара

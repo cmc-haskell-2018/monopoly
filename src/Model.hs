@@ -27,6 +27,9 @@ data GameState = GameState
   , land :: [Street]    -- Информация о полях
   , typeStep :: Int     -- Тип текущего действия
   , intSeq :: [Int]
+  , chanceCards :: [ChanceCard]
+  , intSeqChanceCards :: [Int] 
+  , currentChanceCard :: Int
   }
 
 -- | Данные об одном игроке
@@ -53,6 +56,23 @@ data Cubes = Cubes
   { firstCube :: Int
   , secondCube :: Int
   }
+
+data ChanceCard = ChanceCard
+  { title :: String
+  , balanceChange :: Int
+  }
+
+getChanceCards :: [ChanceCard]
+getChanceCards = 
+    [ ChanceCard
+      { title = "Возьмите 200$"
+      , balanceChange = 200
+      }
+    , ChanceCard
+      { title = "Вас обокрали, -200$"
+      , balanceChange = -200
+      }
+    ]
 
 getLand :: [Street]
 getLand =
