@@ -556,7 +556,7 @@ drawStreetInfo imagesY imagesG gameState
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
       --nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
       streetInfoY = imagesY !! (numCurrentStreet (menuPledgeState gameState))
-      streetIndoG = imagesG !! (numCurrentStreet (menuPledgeState gameState))
+      streetInfoG = imagesG !! (numCurrentStreet (menuPledgeState gameState))
 
 
 drawPledgeButton :: Picture -> Picture
