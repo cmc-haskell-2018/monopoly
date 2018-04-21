@@ -54,7 +54,7 @@ data Player = Player
   , playerPosition :: Point  -- Где на поле нарисована его фишка (координаты)
   , inAcadem :: Bool -- Находится ли в академе
   , missSteps :: Int -- Сколько ходов осталось пропустить
-  , hasAntiPrisonCard :: Bool
+  , hasAntiAcademCard :: Bool
   }
 
 -- | Информация о клетке поля
@@ -92,7 +92,7 @@ getChanceCards =
       , newPosition = -1
       }
     , ChanceCard -- id = 2
-      { title = "You have been arested! Go to the prison"
+      { title = "You have been arested! Go to the academ"
       , balanceChange = 0
       , newPosition = 10
       }
@@ -102,7 +102,7 @@ getChanceCards =
       , newPosition = 0
       }
     , ChanceCard -- id = 4
-      { title = "Get antiprison card!"
+      { title = "Get antiacadem card!"
       , balanceChange = 0
       , newPosition = -1
       }

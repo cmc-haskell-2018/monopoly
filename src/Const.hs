@@ -27,5 +27,5 @@ stepShowChanceCard :: Int
 stepShowChanceCard = 3
 
 -- Состояние игры, к котором показываем карточку "анти академ"
-stepShowAntiPrisonCard :: Int
-stepShowAntiPrisonCard = 4
+stepShowAntiAcademCard :: Int
+stepShowAntiAcademCard = 4
