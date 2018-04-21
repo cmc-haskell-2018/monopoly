@@ -37,14 +37,55 @@ loadImages = do
   Just left1 <- loadJuicyPNG "images/left1.png"
   Just left0 <- loadJuicyPNG "images/left0.png"
   Just pledgeMenu <- loadJuicyPNG "images/pledgeMenu.png"
-  Just cubesOne <- loadJuicyPNG "images/1.png"
-  Just cubesTwo <- loadJuicyPNG "images/2.png"
-  Just cubesThree <- loadJuicyPNG "images/3.png"
-  Just cubesFour <- loadJuicyPNG "images/4.png"
-  Just cubesFive <- loadJuicyPNG "images/5.png"
-  Just cubesSix <- loadJuicyPNG "images/6.png"
+  Just cubesOne <- loadJuicyPNG "images/1dot.png"
+  Just cubesTwo <- loadJuicyPNG "images/2dot.png"
+  Just cubesThree <- loadJuicyPNG "images/3dot.png"
+  Just cubesFour <- loadJuicyPNG "images/4dot.png"
+  Just cubesFive <- loadJuicyPNG "images/5dot.png"
+  Just cubesSix <- loadJuicyPNG "images/6dot.png"
   Just pledgeButton <- loadJuicyPNG "images/pledgeButton.png"
   Just empty <- loadJuicyPNG "images/empty.png"
+  Just field0Yellow <- loadJuicyPNG "images/0.png"
+  Just field1Yellow <- loadJuicyPNG "images/1.png"
+  Just field2Yellow <- loadJuicyPNG "images/2.png"
+  Just field3Yellow <- loadJuicyPNG "images/3.png"
+  Just field4Yellow <- loadJuicyPNG "images/4.png"
+  Just field5Yellow <- loadJuicyPNG "images/5.png"
+  Just field6Yellow <- loadJuicyPNG "images/6.png"
+  Just field7Yellow <- loadJuicyPNG "images/7.png"
+  Just field8Yellow <- loadJuicyPNG "images/8.png"
+  Just field9Yellow <- loadJuicyPNG "images/9.png"
+  Just field10Yellow <- loadJuicyPNG "images/10.png"
+  Just field11Yellow <- loadJuicyPNG "images/11.png"
+  Just field12Yellow <- loadJuicyPNG "images/12.png"
+  Just field13Yellow <- loadJuicyPNG "images/13.png"
+  Just field14Yellow <- loadJuicyPNG "images/14.png"
+  Just field15Yellow <- loadJuicyPNG "images/15.png"
+  Just field16Yellow <- loadJuicyPNG "images/16.png"
+  Just field17Yellow <- loadJuicyPNG "images/17.png"
+  Just field18Yellow <- loadJuicyPNG "images/18.png"
+  Just field19Yellow <- loadJuicyPNG "images/19.png"
+  Just field20Yellow <- loadJuicyPNG "images/20.png"
+  Just field21Yellow <- loadJuicyPNG "images/21.png"
+  Just field22Yellow <- loadJuicyPNG "images/22.png"
+  Just field23Yellow <- loadJuicyPNG "images/23.png"
+  Just field24Yellow <- loadJuicyPNG "images/24.png"
+  Just field25Yellow <- loadJuicyPNG "images/25.png"
+  Just field26Yellow <- loadJuicyPNG "images/26.png"
+  Just field27Yellow <- loadJuicyPNG "images/27.png"
+  Just field28Yellow <- loadJuicyPNG "images/28.png"
+  Just field29Yellow <- loadJuicyPNG "images/29.png"
+  Just field30Yellow <- loadJuicyPNG "images/30.png"
+  Just field31Yellow <- loadJuicyPNG "images/31.png"
+  Just field32Yellow <- loadJuicyPNG "images/32.png"
+  Just field33Yellow <- loadJuicyPNG "images/33.png"
+  Just field34Yellow <- loadJuicyPNG "images/34.png"
+  Just field35Yellow <- loadJuicyPNG "images/35.png"
+  Just field36Yellow <- loadJuicyPNG "images/36.png"
+  Just field37Yellow <- loadJuicyPNG "images/37.png"
+  Just field38Yellow <- loadJuicyPNG "images/38.png"
+  Just field39Yellow <- loadJuicyPNG "images/39.png"
+ 
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -76,6 +117,54 @@ loadImages = do
       ]
     , imagePledgeButton = pledgeButton
     , imageEmpty = empty
+    , imagesFieldYellow =
+      [ field0Yellow
+      , field1Yellow
+      , field2Yellow
+      , field3Yellow
+      , field4Yellow
+      , field5Yellow
+      , field6Yellow
+      , field3Yellow
+      , field5Yellow
+      , field6Yellow
+      , field7Yellow
+      , field8Yellow
+      , field9Yellow
+      , field10Yellow
+      , field11Yellow
+      , field12Yellow
+      , field13Yellow
+      , field14Yellow
+      , field12Yellow
+      , field13Yellow
+      , field14Yellow
+      , field15Yellow
+      , field16Yellow
+      , field17Yellow
+      , field18Yellow
+      , field19Yellow
+      , field20Yellow
+      , field21Yellow
+      , field22Yellow
+      , field23Yellow
+      , field24Yellow
+      , field25Yellow
+      , field26Yellow
+      , field27Yellow
+      , field28Yellow
+      , field29Yellow
+      , field30Yellow
+      , field31Yellow
+      , field32Yellow
+      , field33Yellow
+      , field34Yellow
+      , field35Yellow
+      , field36Yellow
+      , field37Yellow
+      , field38Yellow
+      , field39Yellow
+      ]
     }
 
 -- | Сгенерировать начальное состояние игры.
@@ -284,7 +373,7 @@ drawGameState images gameState
     ]
   | (isPledgeMenu gameState) = pictures
     [ (imagePledgeMenu images)
-    , drawStreetInfo gameState
+    , drawStreetInfo (imagesFieldYellow images) gameState
     , drawNet
     ]
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
@@ -421,22 +510,22 @@ isInAcadem gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
 -- | В меню для совершения залога вывести информацию о кафедре
-drawStreetInfo :: GameState -> Picture
-drawStreetInfo gameState
+drawStreetInfo :: [Picture] -> GameState -> Picture
+drawStreetInfo images gameState
   | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = pictures
-    [ translate x y (scale 0.6 0.6 (color red (text nameStreet)))
+    [ translate x y (scale 0.8 0.8 streetInfo)--(scale 0.6 0.6 (color red (text nameStreet)))
     , translate x2 y2 (scale r r (text pledgePrice))
     , translate x3 y3 (scale r r (text cancelPledgePrice))
     , translate x4 y4 (scale r r (text balance))
     ]
   | otherwise = pictures
-    [ translate x y (scale 0.6 0.6 (color green (text nameStreet)))
+    [ translate x y (scale 0.8 0.8 streetInfo) --(scale 0.6 0.6 (color green (text nameStreet)))
     , translate x2 y2 (scale r r (text pledgePrice))
     , translate x3 y3 (scale r r (text cancelPledgePrice))
     , translate x4 y4 (scale r r (text balance))
     ]
     where
-      (x, y) = (-400, 150)
+      (x, y) = (-150, 182)
       (x2, y2) = (-120, -220)
       (x3, y3) = (-130, -280)
       (x4, y4) = (0, -340)
@@ -444,7 +533,8 @@ drawStreetInfo gameState
       pledgePrice = show (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)
       cancelPledgePrice = show ((div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4) * 3)
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
-      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
+      --nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
+      streetInfo = images !! (numCurrentStreet (menuPledgeState gameState))
 
 -- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
 makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]

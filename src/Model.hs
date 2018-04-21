@@ -20,6 +20,7 @@ data Images = Images
   , imagesCube :: [Picture]
   , imagePledgeButton :: Picture
   , imageEmpty :: Picture
+  , imagesFieldYellow :: [Picture]
   }
 
 -- | Состояние игры
@@ -127,6 +128,7 @@ getLand =
       , priceRent = 12
       , isRent = False
       , owner = 6
+      , isPledge = False
       }
     , Street 
       { name = "Шанс"
