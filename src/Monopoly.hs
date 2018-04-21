@@ -4,7 +4,7 @@ import Graphics.Gloss.Data.Vector()
 import Graphics.Gloss.Interface.Pure.Game
 import Const
 import Model
-import Debug.Trace()
+import Debug.Trace
 import System.Random
 
 -- | Запустить моделирование с заданным начальным состоянием вселенной.
@@ -453,8 +453,8 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
-  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (gameState { typeStep = stepGo })
-  | (typeStep gameState) == stepShowAntiPrisonCard = gameNextPlayer (gameState { typeStep = stepGo })
+  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (throwCubes (gameState { typeStep = stepGo }))
+  | (typeStep gameState) == stepShowAntiPrisonCard = gameNextPlayer (throwCubes (gameState { typeStep = stepGo }))
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
@@ -792,7 +792,7 @@ applyChance gameState = gameState
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
       balanceFromCard = (balanceChange ((chanceCards gameState) !! chanceCardNumber))
-      newPositionFromCard = (newPosition ((chanceCards gameState) !! (chanceCardNumber)))
+      newPositionFromCard = (trace "asd" )$ (newPosition ((chanceCards gameState) !! chanceCardNumber))
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
@@ -908,7 +908,7 @@ movePlayer player cubesSum = player
   , playerPosition = getPlayerPosition (number player) newPlayerCell
   }
     where
-      newPlayerCell = (mod ((playerCell player) + cubesSum + fieldsNumber) fieldsNumber)
+      newPlayerCell = (mod ((playerCell player) + cubesSum) fieldsNumber)
 
 movePlayerNewPosition :: Player -> Int -> Player
 movePlayerNewPosition player newPosition 
