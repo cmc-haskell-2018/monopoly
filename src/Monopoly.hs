@@ -348,6 +348,106 @@ initGame gen = GameState
     }
   }
 
+updateGame :: GameState -> GameState
+updateGame gameState = GameState
+  { players =
+    [ Player
+      { number = 1
+      , colour = 1
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 1 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player
+      { number = 2
+      , colour = 2
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 2 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player
+      { number = 3
+      , colour = 3
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 3 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player
+      { number = 4
+      , colour = 4
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 4 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player
+      { number = 5
+      , colour = 5
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 5 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player
+      { number = 6
+      , colour = 6
+      , money = 500
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 6 0
+      , inAcadem = False
+      , missSteps = 0
+      , hasAntiAcademCard = False
+      }
+    , Player -- Фиктивный игрок
+      { number = 7
+      , colour = 7
+      , money = 0
+      , property = []
+      , playerCell = 0
+      , playerPosition = getPlayerPosition 7 1
+      , inAcadem = False
+      , missSteps = 0
+      }
+    ]
+  , cubes = Cubes
+    { firstCube = 1
+    , secondCube = 1
+    }
+  , gamePlayer = 0 -- Чей сейчас ход
+  , typeStep = stepGo -- Тип текущего шага
+  , land = getLand
+  , chanceCards = getChanceCards
+  , currentChanceCard = 0
+  , isStartMenu = True
+  , countPlayers = 4
+  , isIncorrectColours = False
+  , isMoveToAcadem = False
+  , isPledgeMenu = False
+  , isAuction = False
+  , menuPledgeState = MenuPledgeState
+    { numCurrentStreet = 0
+    }
+  }
+
 canBuy :: GameState -> Bool
 canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
   where
@@ -479,7 +579,7 @@ drawGameState images gameState
 
 
 drawNet :: Picture
-drawNet = pictures
+drawNet = Blank{-pictures
   [ line [(0, -300), (0, 300)]
   , line [(-50, -300), (-50, 300)]
   , line [(-100, -300), (-100, 300)]
@@ -518,7 +618,7 @@ drawNet = pictures
   , line [(-500, 200), (500, 200)]
   , line [(-500, 250), (500, 250)]
   , line [(-500, 300), (500, 300)]
-  ]
+  ]-}
 
 drawAuction :: GameState -> Picture -> Picture
 drawAuction gameState image = translate 0 0 image
@@ -530,6 +630,7 @@ isInAcadem gameState
   | otherwise = False
     where
       player = (players gameState) !! (gamePlayer gameState)
+
 -- | В меню для совершения залога вывести информацию о кафедре
 drawStreetInfo :: [Picture] -> [Picture] -> GameState -> Picture
 drawStreetInfo imagesY imagesG gameState
@@ -717,6 +818,7 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
+  | (haveWinner gameState) && (isAgainPlay mouse) = (updateGame gameState)
   | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (changeChanceCardNumber (applyChance (gameState { typeStep = stepGo })))
   | (typeStep gameState) == stepShowAntiAcademCard = gameNextPlayer (gameState { typeStep = stepGo })
   | (isStartMenu gameState) = menuHandle gameState mouse
@@ -736,6 +838,9 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     Nothing -> gameState
   | otherwise = gameState
 handleGame _ gameState = gameState
+
+isAgainPlay :: Point -> Bool
+isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
 
 auctionHandle :: GameState -> Point -> GameState
 auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState
