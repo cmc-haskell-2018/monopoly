@@ -4,7 +4,7 @@ import Graphics.Gloss.Data.Vector()
 import Graphics.Gloss.Interface.Pure.Game
 import Const
 import Model
-import Debug.Trace()
+import Debug.Trace
 import System.Random
 
 -- | Запустить моделирование с заданным начальным состоянием вселенной.
@@ -93,6 +93,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 1 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player
       { number = 2
@@ -103,6 +104,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 2 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player
       { number = 3
@@ -113,6 +115,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 3 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player
       { number = 4
@@ -123,6 +126,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 4 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player
       { number = 5
@@ -133,6 +137,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 5 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player
       { number = 6
@@ -143,6 +148,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 6 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       }
     , Player -- Фиктивный игрок
       { number = 7
@@ -163,6 +169,9 @@ initGame gen = GameState
   , typeStep = stepGo -- Тип текущего шага
   , land = getLand
   , intSeq = randomRs (1,6) gen
+  , chanceCards = getChanceCards
+  , intSeqChanceCards = randomRs (0, сhanceCardsCount) gen
+  , currentChanceCard = 0
   , isStartMenu = True
   , countPlayers = 4
   , isIncorrectColours = False
@@ -260,6 +269,21 @@ drawGameState images gameState
     , drawLeftCube gameState (imagesCube images)
     , drawRightCube gameState (imagesCube images)
     ] )
+  | (typeStep gameState) == stepShowChanceCard = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
+    ++ [ drawChanceCard gameState
+    , drawLeftCube gameState (imagesCube images)
+    , drawRightCube gameState (imagesCube images)
+    ]
+    )
+  | (typeStep gameState) == stepShowAntiAcademCard = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
+    ++ [ drawAntiAcademCard ] 
+  )
   | otherwise = pictures (
     [ drawPlayingField (imagePlayingField images)
     , drawPledgeButton (imagePledgeButton images)
@@ -526,6 +550,8 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
+  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (changeChanceCardNumber (applyChance (gameState { typeStep = stepGo })))
+  | (typeStep gameState) == stepShowAntiAcademCard = gameNextPlayer (gameState { typeStep = stepGo })
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isAuction gameState) = auctionHandle gameState mouse
@@ -819,12 +845,24 @@ makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
-  | currField == 30 =  (changeIsMoveToAcadem (moveToAcadem gameState))
-  | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
+  | currentField == 30 = doAcadem gameState
+  | not (canBuy gameState) && not (isChanceLand currentStreet) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
     where
-      currField = (playerCell player)
+      currentField = (playerCell player)
+      currentStreet = (land gameState) !! (currentField)
       player = (players gameState) !! (gamePlayer gameState)
+
+doAcadem :: GameState -> GameState
+doAcadem gameState 
+    | (hasAntiAcademCard player) = showAntiAcademCard gameState 
+    | otherwise = (changeIsMoveToAcadem (moveToAcadem gameState))
+      where
+        player = (players gameState) !! (gamePlayer gameState)
+
+showAntiAcademCard :: GameState -> GameState
+showAntiAcademCard gameState = gameState
+  { typeStep = stepShowAntiAcademCard }
 
 changeIsMoveToAcadem :: GameState -> GameState
 changeIsMoveToAcadem gameState = gameState { isMoveToAcadem = True }
@@ -849,6 +887,44 @@ setAcademStatus player = player
   { inAcadem = True
   , missSteps = 2
   }
+
+-- | True, если текущее поле - "Шанс"
+isChanceLand :: Street -> Bool
+isChanceLand street = (name street)  == "Шанс"
+
+drawAntiAcademCard :: Picture
+drawAntiAcademCard = translate x y (scale r r (color red (text "Player has antiacadem card! :))))")))
+    where
+      x = -200
+      y = 400
+      r = 0.3
+
+-- | Нарисовать сообщение у карточки Шанс
+drawChanceCard :: GameState -> Picture
+drawChanceCard gameState = translate x y (scale r r (text chanceCardTitle))
+    where
+      x = -200
+      y = 400
+      r = 0.3
+      chanceCardTitle = (title ((chanceCards gameState) !! (currentChanceCard gameState)))
+
+-- | Применить карточку Шанс
+applyChance :: GameState -> GameState
+applyChance gameState 
+    | chanceCardNumber == 2 = doAcadem gameState 
+    | chanceCardNumber == 4 = gameState 
+      { players = firstPlayers ++ [ player { hasAntiAcademCard = True } ] ++ lastPlayers }
+    | otherwise = gameState
+      { players = firstPlayers ++ [(movePlayerNewPosition (changeBalance player balanceFromCard) newPositionFromCard)] ++ lastPlayers
+      , typeStep = stepGo
+      }
+    where
+      chanceCardNumber = (currentChanceCard gameState)
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = (players gameState) !! (gamePlayer gameState)
+      lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
+      balanceFromCard = (balanceChange ((chanceCards gameState) !! chanceCardNumber))
+      newPositionFromCard = (newPosition ((chanceCards gameState) !! chanceCardNumber))
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
@@ -878,17 +954,6 @@ changeBalance player value = player
   { money = (money player) + value
   }
 
--- | Уплата налогов
-payTax :: GameState -> Int -> GameState
-payTax gameState count = gameState
-  { players = firstPlayers ++ [(player) { money = (money (player)) - count}] ++ lastPlayers
-  , gamePlayer = nextPlayer gameState
-  }
-    where
-      firstPlayers = take (gamePlayer gameState) (players gameState)
-      player = (players gameState) !! (gamePlayer gameState)
-      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
-
 -- | Кинуть кубики
 throwCubes :: GameState -> GameState
 throwCubes gameState =
@@ -903,6 +968,17 @@ throwCubes gameState =
       , secondCube = second
       }
     , intSeq = nextList
+    }
+
+changeChanceCardNumber :: GameState -> GameState
+changeChanceCardNumber gameState =
+  let
+    list = intSeqChanceCards gameState
+    number = head list
+    nextList = drop 1 list
+  in gameState
+    { currentChanceCard = number
+    , intSeqChanceCards = nextList
     }
 
 -- | Совершение покупки спецсеминара
@@ -939,10 +1015,10 @@ changePlayerCell gameState = gameState
       cubesSum = (firstCube (cubes gameState)) + (secondCube (cubes gameState))
       playerAfterMove = (movePlayer player cubesSum)
 
--- | Если кафедра свободна, переходим в состояние "предложить покупку"
--- | Иначе просто совершаем шаг
+-- | Переходим различные состояния, в зависимости от клетки
 getTypeByCell :: Int -> GameState -> Int
 getTypeByCell index gameState
+  | isChanceLand ((land gameState) !! index) == True = stepShowChanceCard
   | isRent ((land gameState) !! index) == False = stepPay
   | otherwise = stepGo
 
@@ -954,6 +1030,14 @@ movePlayer player cubesSum = player
   }
     where
       newPlayerCell = (mod ((playerCell player) + cubesSum) fieldsNumber)
+
+movePlayerNewPosition :: Player -> Int -> Player
+movePlayerNewPosition player newPosition 
+    | newPosition == -1 = player
+    | otherwise = player 
+      { playerCell = newPosition
+      , playerPosition = getPlayerPosition (number player) newPosition
+      }
 
 -- | Для игрока получить местоположение его фишки на игровом поле по номеру клетки
 getPlayerPosition :: Int -> Int -> Point
