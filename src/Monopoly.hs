@@ -85,6 +85,46 @@ loadImages = do
   Just field37Yellow <- loadJuicyPNG "images/37.png"
   Just field38Yellow <- loadJuicyPNG "images/38.png"
   Just field39Yellow <- loadJuicyPNG "images/39.png"
+  Just field0 <- loadJuicyPNG "images/0g.png"
+  Just field1 <- loadJuicyPNG "images/1g.png"
+  Just field2 <- loadJuicyPNG "images/2g.png"
+  Just field3 <- loadJuicyPNG "images/3g.png"
+  Just field4 <- loadJuicyPNG "images/4g.png"
+  Just field5 <- loadJuicyPNG "images/5g.png"
+  Just field6 <- loadJuicyPNG "images/6g.png"
+  Just field7 <- loadJuicyPNG "images/7g.png"
+  Just field8 <- loadJuicyPNG "images/8g.png"
+  Just field9 <- loadJuicyPNG "images/9g.png"
+  Just field10 <- loadJuicyPNG "images/10g.png"
+  Just field11 <- loadJuicyPNG "images/11g.png"
+  Just field12 <- loadJuicyPNG "images/12g.png"
+  Just field13 <- loadJuicyPNG "images/13g.png"
+  Just field14 <- loadJuicyPNG "images/14g.png"
+  Just field15 <- loadJuicyPNG "images/15g.png"
+  Just field16 <- loadJuicyPNG "images/16g.png"
+  Just field17 <- loadJuicyPNG "images/17g.png"
+  Just field18 <- loadJuicyPNG "images/18g.png"
+  Just field19 <- loadJuicyPNG "images/19g.png"
+  Just field20 <- loadJuicyPNG "images/20g.png"
+  Just field21 <- loadJuicyPNG "images/21g.png"
+  Just field22 <- loadJuicyPNG "images/22g.png"
+  Just field23 <- loadJuicyPNG "images/23g.png"
+  Just field24 <- loadJuicyPNG "images/24g.png"
+  Just field25 <- loadJuicyPNG "images/25g.png"
+  Just field26 <- loadJuicyPNG "images/26g.png"
+  Just field27 <- loadJuicyPNG "images/27g.png"
+  Just field28 <- loadJuicyPNG "images/28g.png"
+  Just field29 <- loadJuicyPNG "images/29g.png"
+  Just field30 <- loadJuicyPNG "images/30g.png"
+  Just field31 <- loadJuicyPNG "images/31g.png"
+  Just field32 <- loadJuicyPNG "images/32g.png"
+  Just field33 <- loadJuicyPNG "images/33g.png"
+  Just field34 <- loadJuicyPNG "images/34g.png"
+  Just field35 <- loadJuicyPNG "images/35g.png"
+  Just field36 <- loadJuicyPNG "images/36g.png"
+  Just field37 <- loadJuicyPNG "images/37g.png"
+  Just field38 <- loadJuicyPNG "images/38g.png"
+  Just field39 <- loadJuicyPNG "images/39g.png"
   Just auctionPic <- loadJuicyPNG "images/auction.png"
   return Images
     { imageStartMenu = startMenu
@@ -125,17 +165,11 @@ loadImages = do
       , field4Yellow
       , field5Yellow
       , field6Yellow
-      , field3Yellow
-      , field5Yellow
-      , field6Yellow
       , field7Yellow
       , field8Yellow
       , field9Yellow
       , field10Yellow
       , field11Yellow
-      , field12Yellow
-      , field13Yellow
-      , field14Yellow
       , field12Yellow
       , field13Yellow
       , field14Yellow
@@ -165,6 +199,49 @@ loadImages = do
       , field38Yellow
       , field39Yellow
       ]
+    , imagesFieldGreen =
+      [ field0
+      , field1
+      , field2
+      , field3
+      , field4
+      , field5
+      , field6
+      , field7
+      , field8
+      , field9
+      , field10
+      , field11
+      , field12
+      , field13
+      , field14
+      , field15
+      , field16
+      , field17
+      , field18
+      , field19
+      , field20
+      , field21
+      , field22
+      , field23
+      , field24
+      , field25
+      , field26
+      , field27
+      , field28
+      , field29
+      , field30
+      , field31
+      , field32
+      , field33
+      , field34
+      , field35
+      , field36
+      , field37
+      , field38
+      , field39
+      ]
+
     , imageAuction = scale 1 1 auctionPic
     }
 
@@ -296,7 +373,7 @@ drawGameState images gameState
     ]
   | (isPledgeMenu gameState) = pictures
     [ (imagePledgeMenu images)
-    , drawStreetInfo (imagesFieldYellow images) gameState
+    , drawStreetInfo (imagesFieldYellow images) (imagesFieldGreen images) gameState
     , drawNet
     ]
   | (isAuction gameState) = pictures (
@@ -454,16 +531,16 @@ isInAcadem gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
 -- | В меню для совершения залога вывести информацию о кафедре
-drawStreetInfo :: [Picture] -> GameState -> Picture
-drawStreetInfo images gameState
+drawStreetInfo :: [Picture] -> [Picture] -> GameState -> Picture
+drawStreetInfo imagesY imagesG gameState
   | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = pictures
-    [ translate x y (scale 0.8 0.8 streetInfo)--(scale 0.6 0.6 (color red (text nameStreet)))
+    [ translate x y (scale 0.8 0.8 streetInfoY)--(scale 0.6 0.6 (color red (text nameStreet)))
     , translate x2 y2 (scale r r (text pledgePrice))
     , translate x3 y3 (scale r r (text cancelPledgePrice))
     , translate x4 y4 (scale r r (text balance))
     ]
   | otherwise = pictures
-    [ translate x y (scale 0.8 0.8 streetInfo) --(scale 0.6 0.6 (color green (text nameStreet)))
+    [ translate x y (scale 0.8 0.8 streetInfoG) --(scale 0.6 0.6 (color green (text nameStreet)))
     , translate x2 y2 (scale r r (text pledgePrice))
     , translate x3 y3 (scale r r (text cancelPledgePrice))
     , translate x4 y4 (scale r r (text balance))
@@ -478,7 +555,8 @@ drawStreetInfo images gameState
       cancelPledgePrice = show ((div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4) * 3)
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
       --nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
-      streetInfo = images !! (numCurrentStreet (menuPledgeState gameState))
+      streetInfoY = imagesY !! (numCurrentStreet (menuPledgeState gameState))
+      streetIndoG = imagesG !! (numCurrentStreet (menuPledgeState gameState))
 
 
 drawPledgeButton :: Picture -> Picture

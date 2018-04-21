@@ -22,6 +22,7 @@ data Images = Images
   , imageEmpty :: Picture
   , imagesFieldYellow :: [Picture]
   , imageAuction :: Picture
+  , imagesFieldGreen :: [Picture]
   }
 
 -- | Состояние игры
