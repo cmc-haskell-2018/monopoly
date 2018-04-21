@@ -8,7 +8,7 @@ fieldsNumber = 40
 
 -- Кол-во карточек Шанс (начиная с 0)
 сhanceCardsCount :: Int
-сhanceCardsCount = 5
+сhanceCardsCount = 4
 
 -- Состояние игры, в котором игрок делает ход
 stepGo :: Int

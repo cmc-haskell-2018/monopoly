@@ -453,8 +453,8 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
-  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (throwCubes (gameState { typeStep = stepGo }))
-  | (typeStep gameState) == stepShowAntiPrisonCard = gameNextPlayer (throwCubes (gameState { typeStep = stepGo }))
+  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (gameState { typeStep = stepGo })
+  | (typeStep gameState) == stepShowAntiPrisonCard = gameNextPlayer (gameState { typeStep = stepGo })
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
@@ -704,7 +704,7 @@ startMoney gameState | (cell + cubesSum) >= 40 = gameState { players = firstPlay
 
 -- | Переместиться и выполнить действия
 makeMove :: GameState -> GameState
-makeMove gameState = (makeStepFeatures (changePlayerCell (startMoney (throwCubes gameState))))
+makeMove gameState = throwCubes (makeStepFeatures (changePlayerCell (startMoney gameState)))
 
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
@@ -755,8 +755,8 @@ setAcademStatus player = player
 
 -- | True, если текущее поле - "Шанс"
 isChanceLand :: GameState -> Bool
---isChanceLand gameState = (name ((land gameState) !! (playerCell player))) == "Шанс"
-isChanceLand gameState = True -- TODO delete it, DEBUG!!!
+isChanceLand gameState = (name ((land gameState) !! (playerCell player))) == "Шанс"
+--isChanceLand gameState = True -- TODO delete it, DEBUG!!!
     where
       player = (players gameState) !! (gamePlayer gameState)
 
@@ -785,6 +785,7 @@ drawChanceCard gameState = translate x y (scale r r (text chanceCardTitle))
 applyChance :: GameState -> GameState
 applyChance gameState = gameState 
   { players = firstPlayers ++ [(movePlayerNewPosition (changeBalance player balanceFromCard) newPositionFromCard)] ++ lastPlayers
+  , typeStep = stepGo
   }
     where
       chanceCardNumber = (currentChanceCard gameState)
@@ -792,7 +793,7 @@ applyChance gameState = gameState
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
       balanceFromCard = (balanceChange ((chanceCards gameState) !! chanceCardNumber))
-      newPositionFromCard = (trace "asd" )$ (newPosition ((chanceCards gameState) !! chanceCardNumber))
+      newPositionFromCard = (newPosition ((chanceCards gameState) !! chanceCardNumber))
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState

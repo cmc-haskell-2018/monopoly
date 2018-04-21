@@ -101,7 +101,7 @@ getChanceCards =
       , balanceChange = 0
       , newPosition = 0
       }
-    , ChanceCard -- id = 5
+    , ChanceCard -- id = 4
       { title = "Get antiprison card!"
       , balanceChange = 0
       , newPosition = -1
