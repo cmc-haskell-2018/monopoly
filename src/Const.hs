@@ -2,10 +2,6 @@ module Const where
 
 -- | Некоторые константы для игры
 
--- Кол-во игроков
-playersNumber :: Int
-playersNumber = 4
-
 -- Кол-во полей
 fieldsNumber :: Int
 fieldsNumber = 40
@@ -17,3 +13,7 @@ stepGo = 0
 -- Состояние игры, в котором игрок совершает покупку
 stepPay :: Int
 stepPay = 1
+
+-- Состояние игры, в котором происходит аукцион для следующих игроков
+stepAuction :: Int
+stepAuction = 2
