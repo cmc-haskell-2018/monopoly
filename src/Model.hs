@@ -78,7 +78,7 @@ getLand :: [Street]
 getLand =
     [ Street
       { name = "start" --"Старт"
-      , price = 0 
+      , price = 0
       , isRent = True     -- Для специальных полей, которые нельзя купить - всегда True
       , priceRent = 0
       , owner = 6         -- Для специальных  полей - фиктивный седьмой игрок

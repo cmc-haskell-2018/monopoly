@@ -283,7 +283,7 @@ drawStreetInfo gameState = pictures
       pledgePrice = show (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)
       cancelPledgePrice = show ((div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4) * 3)
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
-      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
+      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) ++ "    " ++ show(numCurrentStreet (menuPledgeState gameState)) 
 
 -- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
 makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
