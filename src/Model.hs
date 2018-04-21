@@ -89,7 +89,7 @@ getLand =
       , price = 60
       , priceRent = 6
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -105,7 +105,7 @@ getLand =
       , price = 60
       , priceRent = 7
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -121,7 +121,7 @@ getLand =
       , price = 200
       , priceRent = 20
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -129,7 +129,7 @@ getLand =
       , price = 100
       , priceRent = 12
       , isRent = False
-      , owner = 0
+      , owner = 6
       }
     , Street 
       { name = "Шанс"
@@ -144,7 +144,7 @@ getLand =
       , price = 100
       , priceRent = 10
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -152,7 +152,7 @@ getLand =
       , price = 120
       , priceRent = 14
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -168,15 +168,15 @@ getLand =
       , price = 140
       , priceRent = 15
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
-      { name = "Потеряшки"
+      { name = "Poteryashki"
       , price = 150
       , priceRent = 15
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -184,7 +184,7 @@ getLand =
       , price = 140
       , priceRent = 14
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -192,7 +192,7 @@ getLand =
       , price = 160
       , priceRent = 18
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -200,7 +200,7 @@ getLand =
       , price = 200
       , priceRent = 25
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street 
@@ -208,7 +208,7 @@ getLand =
       , price = 180
       , priceRent = 20
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -224,7 +224,7 @@ getLand =
       , price = 180
       , priceRent = 19
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -232,7 +232,7 @@ getLand =
       , price = 200
       , priceRent = 23
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -248,7 +248,7 @@ getLand =
       , price = 220
       , priceRent = 22
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -264,7 +264,7 @@ getLand =
       , price = 220
       , priceRent = 24
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -272,7 +272,7 @@ getLand =
       , price = 240
       , priceRent = 25
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -280,7 +280,7 @@ getLand =
       , price = 200
       , priceRent = 22
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -288,7 +288,7 @@ getLand =
       , price = 260
       , priceRent = 28
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -296,7 +296,7 @@ getLand =
       , price = 260
       , priceRent = 29
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -304,7 +304,7 @@ getLand =
       , price = 150
       , priceRent = 16
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -312,7 +312,7 @@ getLand =
       , price = 280
       , priceRent = 30
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -328,7 +328,7 @@ getLand =
       , price = 300
       , priceRent = 35
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -336,7 +336,7 @@ getLand =
       , price = 300
       , priceRent = 35
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -352,7 +352,7 @@ getLand =
       , price = 320
       , priceRent = 32
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -360,7 +360,7 @@ getLand =
       , price = 200
       , priceRent = 21
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -376,7 +376,7 @@ getLand =
       , price = 350
       , priceRent = 37
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     , Street
@@ -392,7 +392,7 @@ getLand =
       , price = 400
       , priceRent = 40
       , isRent = False
-      , owner = 0
+      , owner = 6
       , isPledge = False
       }
     ]

@@ -275,15 +275,15 @@ drawStreetInfo gameState = pictures
   , translate x4 y4 (scale r r (text balance))
   ]
     where
-      (x, y) = (-350, 150)
-      (x2, y2) = (-200, -200)
-      (x3, y3) = (-200, -260)
+      (x, y) = (-400, 150)
+      (x2, y2) = (-120, -220)
+      (x3, y3) = (-130, -280)
       (x4, y4) = (0, -340)
       r = 0.2
       pledgePrice = show (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)
       cancelPledgePrice = show ((div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4) * 3)
       balance = show (money ((players gameState) !! (gamePlayer gameState)))
-      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) ++ "    " ++ show(numCurrentStreet (menuPledgeState gameState)) 
+      nameStreet = (name ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
 
 -- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
 makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
@@ -435,7 +435,7 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
-  | (isPledgeFeature mouse) = gameState { isPledgeMenu = True }
+  | (isPledgeFeature mouse) = nextPledgeStreet (gameState { isPledgeMenu = True })
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
     Just False -> gameState
