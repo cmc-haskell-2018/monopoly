@@ -54,6 +54,7 @@ data Player = Player
   , playerPosition :: Point  -- Где на поле нарисована его фишка (координаты)
   , inAcadem :: Bool -- Находится ли в академе
   , missSteps :: Int -- Сколько ходов осталось пропустить
+  , hasAntiPrisonCard :: Bool
   }
 
 -- | Информация о клетке поля
@@ -75,33 +76,35 @@ data Cubes = Cubes
 data ChanceCard = ChanceCard
   { title :: String
   , balanceChange :: Int
+  , newPosition :: Int -- Куда переместиться относительно начала карты (если -1, то никуда)
   }
 
 getChanceCards :: [ChanceCard]
 getChanceCards = 
-    [ ChanceCard
+    [ ChanceCard -- id = 0
       { title = "Lucky boy! Get 200$"
       , balanceChange = 200
+      , newPosition = -1
       }
-    , ChanceCard
+    , ChanceCard -- id = 1
       { title = "Sorry, your 200$ have been disappeared :("
       , balanceChange = -200
+      , newPosition = -1
       }
-    , ChanceCard
+    , ChanceCard -- id = 2
       { title = "You have been arested! Go to the prison"
       , balanceChange = 0
+      , newPosition = 10
       }
-    , ChanceCard
+    , ChanceCard -- id = 3
       { title = "Go to Start!" -- возможно тут надо сделать -200
       , balanceChange = 0
+      , newPosition = 0
       }
-    , ChanceCard
-      { title = "Go back three steps"
-      , balanceChange = 0
-      }
-    , ChanceCard
+    , ChanceCard -- id = 5
       { title = "Get antiprison card!"
       , balanceChange = 0
+      , newPosition = -1
       }
     ]
 

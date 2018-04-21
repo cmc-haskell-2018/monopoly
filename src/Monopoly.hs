@@ -87,6 +87,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 1 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player
       { number = 2
@@ -97,6 +98,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 2 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player
       { number = 3
@@ -107,6 +109,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 3 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player
       { number = 4
@@ -117,6 +120,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 4 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player
       { number = 5
@@ -127,6 +131,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 5 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player
       { number = 6
@@ -137,6 +142,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 6 0
       , inAcadem = False
       , missSteps = 0
+      , hasAntiPrisonCard = False
       }
     , Player -- Фиктивный игрок
       { number = 7
@@ -158,7 +164,7 @@ initGame gen = GameState
   , land = getLand
   , intSeq = randomRs (1,6) gen
   , chanceCards = getChanceCards
-  , intSeqChanceCards = randomRs (0, 1) gen
+  , intSeqChanceCards = randomRs (0, сhanceCardsCount) gen
   , currentChanceCard = 0
   , isStartMenu = True
   , countPlayers = 4
@@ -237,6 +243,18 @@ drawGameState images gameState
     , drawLeftCube gameState (imagesCube images)
     , drawRightCube gameState (imagesCube images)
     ] )
+  | (typeStep gameState) == stepShowChanceCard = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
+    ++ [ drawChanceCard gameState ] 
+    )
+  | (typeStep gameState) == stepShowAntiPrisonCard = pictures (
+    [ drawPlayingField (imagePlayingField images) ]
+    ++ moneys ++ pieces ++
+    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
+    ++ [ drawAntiPrisonCard ] 
+  )
   | otherwise = pictures (
     [ drawPlayingField (imagePlayingField images) ]
     ++ moneys ++ pieces ++
@@ -435,12 +453,13 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
+  | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (gameState { typeStep = stepGo })
+  | (typeStep gameState) == stepShowAntiPrisonCard = gameNextPlayer (gameState { typeStep = stepGo })
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
   | (isPledgeFeature mouse) = nextPledgeStreet (gameState { isPledgeMenu = True })
-  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo = doStep gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
@@ -689,15 +708,26 @@ makeMove gameState = (makeStepFeatures (changePlayerCell (startMoney (throwCubes
 
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
-  | (isChanceLand gameState) = gameNextPlayer (applyChance (changeChanceCardNumber gameState)) 
+  | (isChanceLand gameState) = setStepShowingChanceCard (applyChance (changeChanceCardNumber gameState))
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
-  | currField == 30 =  (changeIsMoveToAcadem (moveToAcadem gameState))
+  | currField == 30 =  doAcadem gameState
   | not (canBuy gameState) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
     where
       currField = (playerCell player)
       player = (players gameState) !! (gamePlayer gameState)
+
+doAcadem :: GameState -> GameState
+doAcadem gameState 
+    | (hasAntiPrisonCard player) = showAntiPrisonCard gameState 
+    | otherwise = (changeIsMoveToAcadem (moveToAcadem gameState))
+      where
+        player = (players gameState) !! (gamePlayer gameState)
+
+showAntiPrisonCard :: GameState -> GameState
+showAntiPrisonCard gameState = gameState
+  { typeStep = stepShowAntiPrisonCard }
 
 changeIsMoveToAcadem :: GameState -> GameState
 changeIsMoveToAcadem gameState = gameState { isMoveToAcadem = True }
@@ -726,21 +756,43 @@ setAcademStatus player = player
 -- | True, если текущее поле - "Шанс"
 isChanceLand :: GameState -> Bool
 --isChanceLand gameState = (name ((land gameState) !! (playerCell player))) == "Шанс"
-isChanceLand gameState = True
+isChanceLand gameState = True -- TODO delete it, DEBUG!!!
     where
       player = (players gameState) !! (gamePlayer gameState)
 
--- | Применить карточку шанс
+-- | Изменить состояние игры на "Показывать название карточки Шанс"
+setStepShowingChanceCard :: GameState -> GameState
+setStepShowingChanceCard gameState = gameState
+  { typeStep = stepShowChanceCard }
+
+drawAntiPrisonCard :: Picture
+drawAntiPrisonCard = translate x y (scale r r (text "Player has antiprison card!"))
+    where
+      x = -200
+      y = 400
+      r = 0.3
+
+-- | Нарисовать сообщение у карточки Шанс
+drawChanceCard :: GameState -> Picture
+drawChanceCard gameState = translate x y (scale r r (text chanceCardTitle))
+    where
+      x = -200
+      y = 400
+      r = 0.3
+      chanceCardTitle = (title ((chanceCards gameState) !! (currentChanceCard gameState)))
+
+-- | Применить карточку Шанс
 applyChance :: GameState -> GameState
 applyChance gameState = gameState 
-  { players = firstPlayers ++ [(changeBalance player (balanceChange ((chanceCards gameState) !! chanceCardNumber)))] ++ lastPlayers
+  { players = firstPlayers ++ [(movePlayerNewPosition (changeBalance player balanceFromCard) newPositionFromCard)] ++ lastPlayers
   }
     where
       chanceCardNumber = (currentChanceCard gameState)
       firstPlayers = take (gamePlayer gameState) (players gameState)
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
-    
+      balanceFromCard = (balanceChange ((chanceCards gameState) !! chanceCardNumber))
+      newPositionFromCard = (newPosition ((chanceCards gameState) !! (chanceCardNumber)))
 
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
@@ -856,7 +908,15 @@ movePlayer player cubesSum = player
   , playerPosition = getPlayerPosition (number player) newPlayerCell
   }
     where
-      newPlayerCell = (mod ((playerCell player) + cubesSum) fieldsNumber)
+      newPlayerCell = (mod ((playerCell player) + cubesSum + fieldsNumber) fieldsNumber)
+
+movePlayerNewPosition :: Player -> Int -> Player
+movePlayerNewPosition player newPosition 
+    | newPosition == -1 = player
+    | otherwise = player 
+      { playerCell = newPosition
+      , playerPosition = getPlayerPosition (number player) newPosition
+      }
 
 -- | Для игрока получить местоположение его фишки на игровом поле по номеру клетки
 getPlayerPosition :: Int -> Int -> Point
