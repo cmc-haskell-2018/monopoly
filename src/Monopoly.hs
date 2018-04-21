@@ -528,6 +528,7 @@ handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isStartMenu gameState) = menuHandle gameState mouse
   | (isPledgeMenu gameState) = pledgeHandle gameState mouse
+  | (isAuction gameState) = auctionHandle gameState mouse
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
   | (isPledgeFeature mouse) = nextPledgeStreet (gameState { isPledgeMenu = True })
@@ -546,17 +547,17 @@ handleGame _ gameState = gameState
 auctionHandle :: GameState -> Point -> GameState
 auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState
                               | (isPrevSumPress mouse) > 0 = prevSum gameState
-                              | (isExitFromAuction mouse) = gameState {isAuction = False}
+                              | (isExitFromAuction mouse) = gameState {typeStep = stepGo, isAuction = False}
                               | otherwise = gameState
 
 isNextSumPress :: Point -> Int
-isNextSumPress (x, y) = 0
+isNextSumPress (x, y) = -1
 
 isPrevSumPress :: Point -> Int
-isPrevSumPress (x, y) = 0
+isPrevSumPress (x, y) = -1
 
 isExitFromAuction :: Point -> Bool
-isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= -50) = True
+isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= 0) = True
                          | otherwise = False
 
 nextSum :: GameState -> GameState
