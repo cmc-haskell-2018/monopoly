@@ -17,6 +17,7 @@ startGame images = do
     bgColor = white      -- Цвет фона
     fps     = 100        -- Кол-во кадров в секунду
 
+
 -- | Загрузить изображения из файлов.
 loadImages :: IO Images
 loadImages = do
@@ -42,6 +43,7 @@ loadImages = do
   Just cubesFour <- loadJuicyPNG "images/4.png"
   Just cubesFive <- loadJuicyPNG "images/5.png"
   Just cubesSix <- loadJuicyPNG "images/6.png"
+  Just pledgeButton <- loadJuicyPNG "images/pledgeButton.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -71,8 +73,8 @@ loadImages = do
       , scale 0.3 0.3 cubesFive
       , scale 0.3 0.3 cubesSix
       ]
+    , imagePledgeButton = pledgeButton
     }
-
 
 -- | Сгенерировать начальное состояние игры.
 initGame :: StdGen -> GameState
@@ -183,14 +185,17 @@ drawGameState images gameState
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) gameState
     , drawMessageAboutIncorrectColours
+    , drawNet
     ]
   | (isStartMenu gameState) = pictures
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) gameState
+    , drawNet
     ]
   | (isPledgeMenu gameState) = pictures
     [ (imagePledgeMenu images)
     , drawStreetInfo gameState
+    , drawNet
     ]
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     [ drawPlayingField (imagePlayingField images)
@@ -198,14 +203,19 @@ drawGameState images gameState
     , drawRightCube gameState (imagesCube images)
     , drawEnd (imageWinnerWindow images)
     , drawWinnerWindow gameState
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
     ]
     ++ pieces ++ moneys ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     ] )
   | (isMoveToAcadem gameState) = pictures (
-    [ drawPlayingField (imagePlayingField images) 
+    [ drawPlayingField (imagePlayingField images)
     , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images) ]
+    , drawRightCube gameState (imagesCube images)
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
+    ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
@@ -213,13 +223,19 @@ drawGameState images gameState
   | (isInAcadem gameState) = pictures (
     [ drawPlayingField (imagePlayingField images)
     , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images) ]
+    , drawRightCube gameState (imagesCube images)
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
+    ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
     ] )
   | (typeStep gameState) == stepGo = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
+    [ drawPlayingField (imagePlayingField images)
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
+    ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawLeftCube gameState (imagesCube images)
@@ -228,6 +244,8 @@ drawGameState images gameState
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     [ drawPlayingField (imagePlayingField images)
     , drawPayMenu (imagePayMenu images)
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
     ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
@@ -235,7 +253,10 @@ drawGameState images gameState
     , drawRightCube gameState (imagesCube images)
     ] )
   | otherwise = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
+    [ drawPlayingField (imagePlayingField images)
+    , drawPledgeButton (imagePledgeButton images)
+    , drawNet
+    ]
     ++ moneys ++ pieces ++
     [ drawCurrPlayer (imageCurrPlayer images) gameState
     , drawLeftCube gameState (imagesCube images)
@@ -260,6 +281,48 @@ drawGameState images gameState
       ]
 
 
+drawNet :: Picture
+drawNet = pictures
+  [ line [(0, -300), (0, 300)]
+  , line [(-50, -300), (-50, 300)]
+  , line [(-100, -300), (-100, 300)]
+  , line [(-150, -300), (-150, 300)]
+  , line [(-200, -300), (-200, 300)]
+  , line [(-250, -300), (-250, 300)]
+  , line [(-300, -300), (-300, 300)]
+  , line [(-350, -300), (-350, 300)]
+  , line [(350, -300), (350, 300)]
+  , line [(300, -300), (300, 300)]
+  , line [(250, -300), (250, 300)]
+  , line [(200, -300), (200, 300)]
+  , line [(150, -300), (150, 300)]
+  , line [(100, -300), (100, 300)]
+  , line [(50, -300), (50, 300)]
+  , line [(-400, -300), (-400, 300)]
+  , line [(400, -300), (400, 300)]
+  , line [(-450, -300), (-450, 300)]
+  , line [(450, -300), (450, 300)]
+  , line [(-500, -300), (-500, 300)]
+  , line [(500, -300), (500, 300)]
+  , line [(-550, -300), (-550, 300)]
+  , line [(550, -300), (550, 300)]
+  , line [(-600, -300), (-600, 300)]
+  , line [(600, -300), (600, 300)]
+  , line [(-500, -300), (500, -300)]
+  , line [(-500, -250), (500, -250)]
+  , line [(-500, -200), (500, -200)]
+  , line [(-500, -150), (500, -150)]
+  , line [(-500, -100), (500, -100)]
+  , line [(-500, -50), (500, -50)]
+  , line [(-500, 0), (500, 0)]
+  , line [(-500, 50), (500, 50)]
+  , line [(-500, 100), (500, 100)]
+  , line [(-500, 150), (500, 150)]
+  , line [(-500, 200), (500, 200)]
+  , line [(-500, 250), (500, 250)]
+  , line [(-500, 300), (500, 300)]
+  ]
+
 -- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
 isInAcadem :: GameState -> Bool
 isInAcadem gameState
@@ -267,14 +330,21 @@ isInAcadem gameState
   | otherwise = False
     where
       player = (players gameState) !! (gamePlayer gameState)
-
+-- | В меню для совершения залога вывести информацию о кафедре
 drawStreetInfo :: GameState -> Picture
-drawStreetInfo gameState = pictures
-  [ translate x y (scale 0.6 0.6 (text nameStreet))
-  , translate x2 y2 (scale r r (text pledgePrice))
-  , translate x3 y3 (scale r r (text cancelPledgePrice))
-  , translate x4 y4 (scale r r (text balance))
-  ]
+drawStreetInfo gameState
+  | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = pictures
+    [ translate x y (scale 0.6 0.6 (color red (text nameStreet)))
+    , translate x2 y2 (scale r r (text pledgePrice))
+    , translate x3 y3 (scale r r (text cancelPledgePrice))
+    , translate x4 y4 (scale r r (text balance))
+    ]
+  | otherwise = pictures
+    [ translate x y (scale 0.6 0.6 (color green (text nameStreet)))
+    , translate x2 y2 (scale r r (text pledgePrice))
+    , translate x3 y3 (scale r r (text cancelPledgePrice))
+    , translate x4 y4 (scale r r (text balance))
+    ]
     where
       (x, y) = (-400, 150)
       (x2, y2) = (-120, -220)
@@ -289,6 +359,12 @@ drawStreetInfo gameState = pictures
 -- | Создаем список из изображений граней кубика, чтобы было удобнее с этим работать
 makeListCube :: Picture -> Picture -> Picture -> Picture -> Picture -> Picture -> [Picture]
 makeListCube one two three four five six = [one, two, three, four, five, six] 
+
+drawPledgeButton :: Picture -> Picture
+drawPledgeButton image = translate x y (scale r r image)
+  where
+    (x, y) = (-500, -300)
+    r = 1
 
 -- | Прорисовка левого кубика
 drawLeftCube :: GameState -> [Picture] -> Picture
@@ -327,6 +403,7 @@ drawMessageAboutIncorrectColours = translate x y (scale r r (color red (text err
     errorStr = "Please, choose different colors!"
     r = 0.2
 
+-- | Вывести сообщение, сколько осталось пропустить ходов, если игрок находится в академе
 drawAcademMessage :: [Picture] -> GameState -> Picture
 drawAcademMessage images gameState = translate x y image
     where
@@ -334,6 +411,7 @@ drawAcademMessage images gameState = translate x y image
       image = images !! (missSteps player)
       player = (players gameState) !! (gamePlayer gameState)
 
+-- | Вывести сообщение, что игрок отправляется в академ, если он попал на соответствующую клетку
 drawMoveAcademMessage :: Picture -> Picture
 drawMoveAcademMessage image = translate x y (scale r r image)
   where
@@ -437,7 +515,6 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (isMoveToAcadem gameState) = gameNextPlayer (gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo && (not (isPledgeFeature mouse)) = doStep gameState
   | (isPledgeFeature mouse) = nextPledgeStreet (gameState { isPledgeMenu = True })
-  | (isMoveToAcadem gameState) = gameNextPlayer( gameState { isMoveToAcadem = False })
   | (typeStep gameState) == stepGo = doStep gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
@@ -451,38 +528,44 @@ handleGame _ gameState = gameState
 
 -- Засунь сюда новый вид степа, выводить сообщение красивое
 auction :: GameState -> GameState
-auction gameState = gameState 
+auction gameState = gameState
 
+-- | Если во время хода игрок нажал на клавишу, чтобы совершить залог
 isPledgeFeature :: Point -> Bool
-isPledgeFeature (x, y) = (x < -300) && (y < -300)
+isPledgeFeature (x, y) = (x < -400) && (y < -220)
 
 pledgeHandle :: GameState -> Point -> GameState
 pledgeHandle gameState mouse
   | (isNextStreetPress mouse) = nextPledgeStreet gameState
   | (isPrevStreetPress mouse) = prevPledgeStreet gameState
   | (pledgeStreetPress mouse) = doPledgeStreet gameState
+  | (exitFromPledgeMenu mouse) = gameState { isPledgeMenu = False }
   | otherwise = gameState
 
+-- | Проверки, какие клавишу нажимаются
 isNextStreetPress :: Point -> Bool
-isNextStreetPress (x, y) = x > 0 && y > 0
+isNextStreetPress (x, y) = x > 200 && x < 250 && y > 150 && y < 250
 
 isPrevStreetPress :: Point -> Bool
-isPrevStreetPress (x, y) = x < 0 && y > 0
+isPrevStreetPress (x, y) = x < -520 && x > -575 && y > 150 && y < 250
 
+
+-- | Совершить действие залога и вернуться в игру
 pledgeStreetPress :: Point -> Bool
-pledgeStreetPress (x, y) = x > 0 && y < 0
+pledgeStreetPress (x, y) = x < 0 && y < 0
+
+exitFromPledgeMenu :: Point -> Bool
+exitFromPledgeMenu (x, y) = x > 0 && y < 0
 
 doPledgeStreet :: GameState -> GameState
 doPledgeStreet gameState
   | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = gameState
     { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
-    , players = firstPlayers ++ [changeBalance player ((price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) * (-1))] ++ lastPlayers
-    , isPledgeMenu = False
+    , players = firstPlayers ++ [changeBalance player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4 * (-3))] ++ lastPlayers
     }
   | otherwise = gameState
     { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
-    , players = firstPlayers ++ [changeBalance player (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))] ++ lastPlayers
-    , isPledgeMenu = False
+    , players = firstPlayers ++ [changeBalance player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)] ++ lastPlayers
     }
     where
       firstPlayers = take (gamePlayer gameState) (players gameState)
@@ -560,8 +643,8 @@ correctColours gameState num
   | (haveSame (firstPlayers ++ lastPlayers) player) = False
   | otherwise = correctColours gameState (num + 1)
     where
-      firstPlayers = take num (players gameState)
-      lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
+      firstPlayers = take num (take (countPlayers gameState) (players gameState))
+      lastPlayers = reverse (take ((countPlayers gameState) - (length firstPlayers) - 1) (reverse (take (countPlayers gameState) (players gameState))))
       player = (players gameState) !! num
 
 -- | Проверка, что в списке игроков нет игрока, с таким же цветом фишки
