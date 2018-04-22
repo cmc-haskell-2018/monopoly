@@ -910,10 +910,12 @@ exitFromPledgeMenu (x, y) = x > 0 && y < 0
 
 doPledgeStreet :: GameState -> GameState
 doPledgeStreet gameState
+  | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
+    && (hasMoney player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4 * (3))) = gameState
+      { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
+      , players = firstPlayers ++ [changeBalance player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4 * (-3))] ++ lastPlayers
+      }
   | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) = gameState
-    { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
-    , players = firstPlayers ++ [changeBalance player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 4 * (-3))] ++ lastPlayers
-    }
   | otherwise = gameState
     { land = changePledgeStatus (land gameState) (numCurrentStreet (menuPledgeState gameState))
     , players = firstPlayers ++ [changeBalance player (div (price ((land gameState) !! (numCurrentStreet (menuPledgeState gameState)))) 2)] ++ lastPlayers
@@ -922,6 +924,9 @@ doPledgeStreet gameState
       firstPlayers = take (gamePlayer gameState) (players gameState)
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+
+hasMoney :: Player -> Int -> Bool
+hasMoney player sum = (money player) > sum
 
 changePledgeStatus :: [Street] -> Int -> [Street]
 changePledgeStatus streets num = firstStreets ++ [street {isPledge = not (isPledge street)}] ++ lastStreets
