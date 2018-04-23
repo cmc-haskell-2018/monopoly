@@ -523,6 +523,7 @@ drawGameState images gameState
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     common ++ 
     [ drawPayMenu (imagePayMenu images)
+    , drawInfoPic gameState (imagesFieldGreen images)
     , drawPledgeButton (imagePledgeButton images) gameState
     ]
     )
@@ -571,6 +572,13 @@ drawGameState images gameState
       , drawNet 
       ] ++ moneys ++ pieces ++ help
     help = [ drawQuestion (imageQuestion images) ]
+
+drawInfoPic :: GameState -> [Picture] -> Picture
+drawInfoPic gameState pictures = translate 100 20 (scale 0.4 0.4 image)
+	where
+		player = (players gameState) !! (gamePlayer gameState)
+		num = (playerCell player)
+		image = pictures !! num
 
 drawQuestion :: Picture -> Picture
 drawQuestion image = translate 660 400 image
