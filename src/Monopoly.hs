@@ -265,6 +265,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 2
@@ -276,6 +277,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 3
@@ -287,6 +289,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 4
@@ -298,6 +301,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 5
@@ -309,6 +313,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 6
@@ -320,6 +325,7 @@ initGame gen = GameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player -- Фиктивный игрок
       { number = 7
@@ -330,6 +336,7 @@ initGame gen = GameState
       , inAcadem = False
       , missSteps = 0
       , noProperty = True
+      , auctionPrice = 0
       }
     ]
   , cubes = Cubes
@@ -368,6 +375,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 2
@@ -379,6 +387,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 3
@@ -390,6 +399,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 4
@@ -401,6 +411,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 5
@@ -412,6 +423,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player
       { number = 6
@@ -423,6 +435,7 @@ updateGame gameState = gameState
       , missSteps = 0
       , hasAntiAcademCard = False
       , noProperty = True
+      , auctionPrice = 0
       }
     , Player -- Фиктивный игрок
       { number = 7
@@ -433,6 +446,7 @@ updateGame gameState = gameState
       , inAcadem = False
       , missSteps = 0
       , noProperty = True
+      , auctionPrice = 0
       }
     ]
   , cubes = Cubes
@@ -484,7 +498,8 @@ drawGameState images gameState
     , drawNet
     ])
   | (isAuction gameState) = pictures (
-    [ drawAuction gameState (imageAuction images) 
+    [ drawAuction gameState (imageAuction images)
+    , drawAuctionInfo gameState
     , drawNet] ++ moneys)
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
     common ++
@@ -610,6 +625,30 @@ drawNet = pictures
 
 drawAuction :: GameState -> Picture -> Picture
 drawAuction gameState image = translate 0 0 image
+
+drawAuctionInfo :: GameState -> Picture
+drawAuctionInfo gameState = pictures
+    [ translate x1 y1 (scale r r (text info1))
+    , translate x2 y2 (scale r r (text info2))
+    , translate x3 y3 (scale r r (text info3))
+    , translate x4 y4 (scale r r (text info4))
+    , translate x5 y5 (scale r r (text info5))
+    , translate x6 y6 (scale r r (text info6))
+    ]
+  where
+    (x1, y1) = (25, 46)
+    (x2, y2) = (25, 6)
+    (x3, y3) = (25, -34)
+    (x4, y4) = (25, -74)
+    (x5, y5) = (25, -114)
+    (x6, y6) = (25, -154)
+    info1 = show (auctionPrice ((players gameState) !! 0))
+    info2 = show (auctionPrice ((players gameState) !! 1))
+    info3 = show (auctionPrice ((players gameState) !! 2))
+    info4 = show (auctionPrice ((players gameState) !! 3))
+    info5 = show (auctionPrice ((players gameState) !! 4))
+    info6 = show (auctionPrice ((players gameState) !! 5))
+    r = 1 / 4.5
 
 -- | Проверка, находится ли текущий игрок в академе, чтобы вывести сообщение о том, сколько осталось пропустить
 isInAcadem :: GameState -> Bool
@@ -866,38 +905,83 @@ isAgainPlay :: Point -> Bool
 isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
 
 auctionHandle :: GameState -> Point -> GameState
-auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState
-                              | (isPrevSumPress mouse) > 0 = prevSum gameState
-                              | (isExitFromAuction mouse) = gameState {typeStep = stepGo, isAuction = False}
+auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (isNextSumPress mouse)
+                              | (isPrevSumPress mouse) > 0 = prevSum gameState (isPrevSumPress mouse) field
+                              | (isExitFromAuction mouse) && (buyer /= 0) = (makePayAuction gameState buyer)
+                              | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False}
                               | otherwise = gameState
+                                where
+                                  field = (land gameState) !! (playerCell player)
+                                  player = (players gameState) !! (gamePlayer gameState)
+                                  buyer = (findBuyer (players gameState) 0 1 0)
+                                  curr = (players gameState) !! (buyer - 1)
 
-isNextSumPress :: Point -> Int
-isNextSumPress (x, y) | (x >= -50) && (x <= 0) && (y > 50) && (y <= 75) = 1
-                      | (x >= -50) && (x <= 0) && (y > 0) && (y <= 45) = 2
-                      | (x >= -50) && (x <= 0) && (y > -45) && (y < 5) = 3
-                      | (x >= -50) && (x <= 0) && (y > -75) && (y < -50) = 4
-                      | (x >= -50) && (x <= 0) && (y > -125) && (y < -75) = 5
-                      | (x >= -50) && (x <= 0) && (y > -150) && (y < -125) = 6
-                      | otherwise = 0
+findBuyer :: [Player] -> Int -> Int -> Int -> Int
+findBuyer [] _ _ buyer = buyer 
+findBuyer (player : players) max num buyer | (auctionPrice player) > max = findBuyer players (auctionPrice player) (num + 1) (num)
+                                           | otherwise = findBuyer players max (num + 1) buyer
 
 isPrevSumPress :: Point -> Int
-isPrevSumPress (x, y) | (x >= 200) && (x <= 230) && (y > 50) && (y <= 75) = 1
-                      | (x >= 200) && (x <= 230) && (y > 0) && (y <= 45) = 2
-                      | (x >= 200) && (x <= 230) && (y > -45) && (y < 5) = 3
-                      | (x >= 200) && (x <= 230) && (y > -75) && (y < -50) = 4
-                      | (x >= 200) && (x <= 230) && (y > -125) && (y < -75) = 5
-                      | (x >= 200) && (x <= 230) && (y > -150) && (y < -125) = 6
+isPrevSumPress (x, y) | (x >= -100) && (x <= -50) && (y > 50) && (y <= 75) = 1
+                      | (x >= -100) && (x <= -50) && (y > 0) && (y <= 45) = 2
+                      | (x >= -100) && (x <= -50) && (y > -45) && (y < 5) = 3
+                      | (x >= -100) && (x <= -50) && (y > -75) && (y < -50) = 4
+                      | (x >= -100) && (x <= -50) && (y > -125) && (y < -75) = 5
+                      | (x >= -100) && (x <= -50) && (y > -150) && (y < -125) = 6
+                      | otherwise = 0
+
+isNextSumPress :: Point -> Int
+isNextSumPress (x, y) | (x >= 150) && (x <= 200) && (y > 50) && (y <= 75) = 1
+                      | (x >= 150) && (x <= 200) && (y > 0) && (y <= 45) = 2
+                      | (x >= 150) && (x <= 200) && (y > -45) && (y < 5) = 3
+                      | (x >= 150) && (x <= 200) && (y > -75) && (y < -50) = 4
+                      | (x >= 150) && (x <= 200) && (y > -125) && (y < -75) = 5
+                      | (x >= 150) && (x <= 200) && (y > -150) && (y < -125) = 6
                       | otherwise = 0
 
 isExitFromAuction :: Point -> Bool
 isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= 0) = True
                          | otherwise = False
 
-nextSum :: GameState -> GameState
-nextSum gameState = gameState
+setAuctionPrice :: [Player] -> Street -> Int -> Int -> Int -> [Player]
+setAuctionPrice [] _ _ _ _ = []
+setAuctionPrice (player : players) street numPlayer countPlayer currPlayer | (numPlayer /= currPlayer) && (numPlayer < countPlayer) && ((money player) >= (price street)) = (player {auctionPrice = (price street)} : (setAuctionPrice players street (numPlayer + 1) countPlayer currPlayer)) 
+                                                                         | otherwise = (player {auctionPrice = 0} : (setAuctionPrice players street (numPlayer + 1) countPlayer currPlayer))
 
-prevSum :: GameState -> GameState
-prevSum gameState = gameState
+nextSum :: GameState -> Int -> GameState
+nextSum gameState num | (num /= currPlayer) && ((money player) >= ((auctionPrice player) + 10)) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) + 10}] ++ lastPlayers} 
+                      | otherwise = gameState
+                      where
+                        player = (players gameState) !! (num - 1)
+                        firstPlayers = take (num - 1) (players gameState)
+                        lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+                        currPlayer = (gamePlayer gameState)
+
+prevSum :: GameState -> Int -> Street -> GameState
+prevSum gameState num street | (num /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) - 10}] ++ lastPlayers} 
+                             | otherwise = gameState
+                              where
+                                player = (players gameState) !! (num - 1)
+                                firstPlayers = take (num - 1) (players gameState)
+                                lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+                                currPlayer = (gamePlayer gameState)
+
+makePayAuction :: GameState -> Int -> GameState
+makePayAuction gameState num = gameState
+  { typeStep = stepGo
+  , players = firstPlayers ++ [setNoProperty (changeBalance player priceValue)] ++ lastPlayers
+  , land = firstLands ++ [changeOwner currentLand (num - 1) ] ++ lastLands
+  , isAuction = False
+  }
+    where
+      currPlayer = (players gameState) !! (gamePlayer gameState)
+      firstPlayers = take (num - 1) (players gameState)
+      player = (players gameState) !! (num - 1)
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+      priceValue = (auctionPrice player) * (-1)
+      firstLands = take (playerCell currPlayer) (land gameState)
+      currentLand = (land gameState) !! (playerCell currPlayer)
+      lastLands = reverse (take (length (land gameState) - length(firstLands) - 1) (reverse (land gameState)))
 
 
 -- | Если во время хода игрок нажал на клавишу, чтобы совершить залог
