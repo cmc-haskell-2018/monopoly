@@ -480,84 +480,42 @@ drawGameState images gameState
     [ drawAuction gameState (imageAuction images) 
     , drawNet] ++ moneys)
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
-    [ drawPlayingField (imagePlayingField images)
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    , drawEnd (imageWinnerWindow images)
+    common ++
+    [ drawEnd (imageWinnerWindow images)
     , drawWinnerWindow gameState
-    , drawNet
-    ]
-    ++ pieces ++ moneys ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
     ] )
   | (isMoveToAcadem gameState) = pictures (
-    [ drawPlayingField (imagePlayingField images)
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    , drawPledgeButton (imagePledgeButton images) gameState
-    , drawNet
-    ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
+    common ++
+    [ drawPledgeButton (imagePledgeButton images) gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
     ] )
   | (isInAcadem gameState) = pictures (
-    [ drawPlayingField (imagePlayingField images)
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    , drawPledgeButton (imagePledgeButton images) gameState
-    , drawNet
-    ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
+    common ++
+    [ drawPledgeButton (imagePledgeButton images) gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
     ] )
   | (typeStep gameState) == stepGo = pictures (
-    [ drawPlayingField (imagePlayingField images)
-    , drawPledgeButton (imagePledgeButton images) gameState
-    , drawNet
-    ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    ] )
+    common ++
+    [ drawPledgeButton (imagePledgeButton images) gameState ]
+    )
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
-    [ drawPlayingField (imagePlayingField images)
-    , drawPayMenu (imagePayMenu images)
+    common ++ 
+    [ drawPayMenu (imagePayMenu images)
     , drawPledgeButton (imagePledgeButton images) gameState
-    , drawNet
-    ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    ] )
-  | (typeStep gameState) == stepShowChanceCard = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
-    ++ [ drawChanceCard gameState
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
     ]
     )
+  | (typeStep gameState) == stepShowChanceCard = pictures (
+    common
+    ++ [ drawChanceCard gameState ]
+    )
   | (typeStep gameState) == stepShowAntiAcademCard = pictures (
-    [ drawPlayingField (imagePlayingField images) ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState ]
+    common
     ++ [ drawAntiAcademCard ] 
   )
   | otherwise = pictures (
-    [ drawPlayingField (imagePlayingField images)
-    , drawPledgeButton (imagePledgeButton images) gameState
-    , drawNet
-    ]
-    ++ moneys ++ pieces ++
-    [ drawCurrPlayer (imageCurrPlayer images) gameState
-    , drawLeftCube gameState (imagesCube images)
-    , drawRightCube gameState (imagesCube images)
-    ] )
+    common
+    ++ [ drawPledgeButton (imagePledgeButton images) gameState ]
+  )
   where
     moneys =
       [ drawMoney (players gameState) 0 (countPlayers gameState)
@@ -575,6 +533,13 @@ drawGameState images gameState
       , drawPiece (imagesPiece images) gameState 4
       , drawPiece (imagesPiece images) gameState 5
       ]
+    common = 
+      [ drawPlayingField (imagePlayingField images)
+      , drawCurrPlayer (imageCurrPlayer images) gameState
+      , drawLeftCube gameState (imagesCube images)
+      , drawRightCube gameState (imagesCube images)
+      , drawNet 
+      ] ++ moneys ++ pieces   
 
 
 drawNet :: Picture
