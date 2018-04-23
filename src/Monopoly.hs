@@ -622,10 +622,12 @@ drawNet = pictures
   , line [(-500, 250), (500, 250)]
   , line [(-500, 300), (500, 300)]
   ]
-
+  
+-- | Меню аукциона
 drawAuction :: GameState -> Picture -> Picture
 drawAuction gameState image = translate 0 0 image
 
+-- | Ставки игроков на аукционе
 drawAuctionInfo :: GameState -> Picture
 drawAuctionInfo gameState = pictures
     [ translate x1 y1 (scale r r (text info1))
@@ -845,7 +847,6 @@ drawPlayingField image = translate 0 0 image
 -- =========================================
 -- Обработка событий
 -- =========================================
--- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (showHelp mouse) = (changeStateToHelp gameState)
@@ -906,6 +907,7 @@ changeStateToHelp gameState
 isAgainPlay :: Point -> Bool
 isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
 
+-- | Состояние игры при аукционе
 auctionHandle :: GameState -> Point -> GameState
 auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (isNextSumPress mouse)
                               | (isPrevSumPress mouse) > 0 = prevSum gameState (isPrevSumPress mouse) field
@@ -918,11 +920,13 @@ auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (
                                   buyer = (findBuyer (players gameState) 0 1 0)
                                   curr = (players gameState) !! (buyer - 1)
 
+-- | Находим игрока, стака которого является первой наибольшей
 findBuyer :: [Player] -> Int -> Int -> Int -> Int
 findBuyer [] _ _ buyer = buyer 
 findBuyer (player : players) max num buyer | (auctionPrice player) > max = findBuyer players (auctionPrice player) (num + 1) (num)
                                            | otherwise = findBuyer players max (num + 1) buyer
 
+-- | Кнопка нажатия на уменьшение ставки
 isPrevSumPress :: Point -> Int
 isPrevSumPress (x, y) | (x >= -100) && (x <= -50) && (y > 50) && (y <= 75) = 1
                       | (x >= -100) && (x <= -50) && (y > 0) && (y <= 45) = 2
@@ -932,6 +936,7 @@ isPrevSumPress (x, y) | (x >= -100) && (x <= -50) && (y > 50) && (y <= 75) = 1
                       | (x >= -100) && (x <= -50) && (y > -150) && (y < -125) = 6
                       | otherwise = 0
 
+-- | Кнопка нажатия на увеличение ставки
 isNextSumPress :: Point -> Int
 isNextSumPress (x, y) | (x >= 150) && (x <= 200) && (y > 50) && (y <= 75) = 1
                       | (x >= 150) && (x <= 200) && (y > 0) && (y <= 45) = 2
@@ -941,15 +946,18 @@ isNextSumPress (x, y) | (x >= 150) && (x <= 200) && (y > 50) && (y <= 75) = 1
                       | (x >= 150) && (x <= 200) && (y > -150) && (y < -125) = 6
                       | otherwise = 0
 
+-- | Кнопка выхода из аукциона
 isExitFromAuction :: Point -> Bool
 isExitFromAuction (x, y) | (x >= 250) && (x <= 350) && (y >= -100) && (y <= 0) = True
                          | otherwise = False
 
+-- | Настраиваем первоначальные ставки, равными стоимости участка (исключая не играющих игроков)
 setAuctionPrice :: [Player] -> Street -> Int -> Int -> Int -> [Player]
 setAuctionPrice [] _ _ _ _ = []
 setAuctionPrice (player : players) street numPlayer countPlayer currPlayer | (numPlayer /= currPlayer) && (numPlayer < countPlayer) && ((money player) >= (price street)) = (player {auctionPrice = (price street)} : (setAuctionPrice players street (numPlayer + 1) countPlayer currPlayer)) 
                                                                          | otherwise = (player {auctionPrice = 0} : (setAuctionPrice players street (numPlayer + 1) countPlayer currPlayer))
 
+-- | Увеличиваем сумму ставки на следующую +10
 nextSum :: GameState -> Int -> GameState
 nextSum gameState num | (num /= currPlayer) && ((money player) >= ((auctionPrice player) + 10)) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) + 10}] ++ lastPlayers} 
                       | otherwise = gameState
@@ -959,6 +967,7 @@ nextSum gameState num | (num /= currPlayer) && ((money player) >= ((auctionPrice
                         lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
                         currPlayer = (gamePlayer gameState)
 
+-- | Уменьшаем сумму ставки на следующую -10
 prevSum :: GameState -> Int -> Street -> GameState
 prevSum gameState num street | (num /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) - 10}] ++ lastPlayers} 
                              | otherwise = gameState
@@ -968,6 +977,7 @@ prevSum gameState num street | (num /= currPlayer) && ((money player) >= (auctio
                                 lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
                                 currPlayer = (gamePlayer gameState)
 
+-- | Осуществляем платеж после совершения аукциона
 makePayAuction :: GameState -> Int -> GameState
 makePayAuction gameState num = gameState
   { typeStep = stepGo
