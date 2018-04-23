@@ -865,7 +865,8 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (typeStep gameState) == stepPay = case (isPay mouse) of
     Just True -> makePay gameState
     Just False -> gameState
-      { typeStep = stepGo
+      { players = setAuctionPrice (players gameState) field 0 (countPlayers gameState) (gamePlayer gameState)
+      , typeStep = stepGo
       , gamePlayer = nextPlayer gameState
       , isAuction = True
       }
@@ -873,6 +874,7 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | otherwise = gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
+      field = (land gameState) !! (playerCell player)
 handleGame _ gameState = gameState
 
 closeHelp :: Point -> Bool
