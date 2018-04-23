@@ -22,7 +22,10 @@ data Images = Images
   , imageEmpty :: Picture
   , imagesFieldYellow :: [Picture]
   , imageAuction :: Picture
+  , imageQuestion :: Picture
   , imagesFieldGreen :: [Picture]
+  , imageHelp1 :: Picture
+  , imageHelp2 :: Picture
   }
 
 -- | Состояние игры
@@ -43,6 +46,7 @@ data GameState = GameState
   , menuPledgeState :: MenuPledgeState
   , isPledgeMenu :: Bool
   , isAuction :: Bool
+  , prevTypeStep :: Int
   }
 
 data MenuPledgeState = MenuPledgeState

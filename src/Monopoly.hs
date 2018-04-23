@@ -126,6 +126,9 @@ loadImages = do
   Just field38 <- loadJuicyPNG "images/38g.png"
   Just field39 <- loadJuicyPNG "images/39g.png"
   Just auctionPic <- loadJuicyPNG "images/auction.png"
+  Just questionPic <- loadJuicyPNG "images/question.png"
+  Just help1Pic <- loadJuicyPNG "images/help1.png"
+  Just help2Pic <- loadJuicyPNG "images/help2.png"
   return Images
     { imageStartMenu = startMenu
     , imagesPiece =
@@ -243,6 +246,9 @@ loadImages = do
       ]
 
     , imageAuction = scale 1 1 auctionPic
+    , imageQuestion = scale 0.2 0.2 questionPic
+    , imageHelp1 = scale 1 1 help1Pic
+    , imageHelp2 = scale 1 1 help2Pic
     }
 
 -- | Сгенерировать начальное состояние игры.
@@ -332,6 +338,7 @@ initGame gen = GameState
     }
   , gamePlayer = 0 -- Чей сейчас ход
   , typeStep = stepGo -- Тип текущего шага
+  , prevTypeStep = -1
   , land = getLand
   , intSeq = randomRs (1,6) gen
   , chanceCards = getChanceCards
@@ -460,22 +467,22 @@ canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
 -- | Отобразить состояние игры.
 drawGameState :: Images -> GameState -> Picture
 drawGameState images gameState
-  | (isStartMenu gameState) && (isIncorrectColours gameState) = pictures
+  | (isStartMenu gameState) && (isIncorrectColours gameState) = pictures(
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) (imageEmpty images) gameState
     , drawMessageAboutIncorrectColours
     , drawNet
-    ]
-  | (isStartMenu gameState) = pictures
+    ])
+  | (isStartMenu gameState) = pictures (
     [ drawStartMenu (imageStartMenu images) gameState
     , drawPlayersPieces (imagesPiece images) (imageEmpty images) gameState
     , drawNet
-    ]
-  | (isPledgeMenu gameState) = pictures
+    ])
+  | (isPledgeMenu gameState) = pictures(
     [ (imagePledgeMenu images)
     , drawStreetInfo (imagesFieldYellow images) (imagesFieldGreen images) gameState
     , drawNet
-    ]
+    ])
   | (isAuction gameState) = pictures (
     [ drawAuction gameState (imageAuction images) 
     , drawNet] ++ moneys)
@@ -511,6 +518,14 @@ drawGameState images gameState
   | (typeStep gameState) == stepShowAntiAcademCard = pictures (
     common
     ++ [ drawAntiAcademCard ] 
+    )
+  | (typeStep gameState) == stepShowHelp1 = pictures (
+    common
+    ++ [ drawHelpMessage1 (imageHelp1 images) ]
+  )
+  | (typeStep gameState) == stepShowHelp2 = pictures (
+    common
+    ++ [ drawHelpMessage2 (imageHelp2 images) ]
   )
   | otherwise = pictures (
     common
@@ -539,8 +554,17 @@ drawGameState images gameState
       , drawLeftCube gameState (imagesCube images)
       , drawRightCube gameState (imagesCube images)
       , drawNet 
-      ] ++ moneys ++ pieces   
+      ] ++ moneys ++ pieces ++ help
+    help = [ drawQuestion (imageQuestion images) ]
 
+drawQuestion :: Picture -> Picture
+drawQuestion image = translate 660 400 image
+
+drawHelpMessage1 :: Picture -> Picture
+drawHelpMessage1 image = translate 0 0 image
+
+drawHelpMessage2 :: Picture -> Picture
+drawHelpMessage2 image = translate 0 0 image
 
 drawNet :: Picture
 drawNet = pictures
@@ -785,6 +809,10 @@ drawPlayingField image = translate 0 0 image
 -- ТУТ
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
+  | (showHelp mouse) = (changeStateToHelp gameState)
+  | (typeStep gameState) == stepShowHelp1 && (nextHelp mouse) = (changeToNextHelp gameState)
+  | (typeStep gameState) == stepShowHelp2 && (nextHelp mouse) = (changeToPrevHelp gameState)
+  | ((typeStep gameState) == stepShowHelp1 || (typeStep gameState) == stepShowHelp2) && (closeHelp mouse) = (gameCloseHelp gameState)
   | (haveWinner gameState) && (isAgainPlay mouse) = (updateGame gameState)
   | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (changeChanceCardNumber (applyChance (gameState { typeStep = stepGo })))
   | (typeStep gameState) == stepShowAntiAcademCard = gameNextPlayer (gameState { typeStep = stepGo })
@@ -807,6 +835,32 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
 handleGame _ gameState = gameState
+
+closeHelp :: Point -> Bool
+closeHelp (x, y) = 327 < x && x < 368 && 192 < y && y < 233
+
+showHelp :: Point -> Bool
+showHelp (x, y) = 610 < x && x < 670 && 350 < y && y < 450
+
+nextHelp :: Point -> Bool
+nextHelp (x, y) = 330 < x && x < 370 && -225 < y && y < -182
+
+changeToNextHelp :: GameState -> GameState
+changeToNextHelp gameState = gameState { typeStep = stepShowHelp2 }
+
+changeToPrevHelp :: GameState -> GameState
+changeToPrevHelp gameState = gameState { typeStep = stepShowHelp1 }
+
+gameCloseHelp :: GameState -> GameState
+gameCloseHelp gameState = gameState { typeStep = (prevTypeStep gameState), prevTypeStep = -1 }
+
+-- Изменить состояние игры на "Показать помощь" (надо вернуться в тоже состояние, в котором мы были до(!))
+changeStateToHelp :: GameState -> GameState
+changeStateToHelp gameState
+    | (prevTypeStep gameState) == -1 = gameState { prevTypeStep = lastStep, typeStep = stepShowHelp1 }
+    | otherwise = gameState
+    where
+      lastStep = (typeStep gameState)
 
 isAgainPlay :: Point -> Bool
 isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
