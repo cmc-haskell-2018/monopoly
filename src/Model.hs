@@ -65,6 +65,7 @@ data Player = Player
   , missSteps :: Int -- Сколько ходов осталось пропустить
   , hasAntiAcademCard :: Bool
   , noProperty :: Bool -- Есть ли имущество
+  , auctionPrice :: Int
   }
 
 -- | Информация о клетке поля
