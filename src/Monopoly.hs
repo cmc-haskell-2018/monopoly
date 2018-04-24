@@ -815,7 +815,7 @@ drawMoney allPlayers num maxCount
   | otherwise = translate x y (scale r r (color red (text noMoneyStr)))
     where
       (x, y) = (-630, 400 - 50 * (fromIntegral (number player)))
-      moneyStr = "Player " ++ numberStr ++ ": " ++ show (money player) ++ "-" ++ show (missSteps player) -- !!!  отладочный вывод missSteps для академа - убрать потом
+      moneyStr = "Player " ++ numberStr ++ ": " ++ show (money player)
       r = 1 / fromIntegral 5
       numberStr = show (number player)
       noMoneyStr = "Player " ++ numberStr ++ ": lost"
