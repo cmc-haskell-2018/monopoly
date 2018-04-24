@@ -337,7 +337,6 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 7 1
       , inAcadem = False
       , missSteps = 0
-      , hasAntiAcademCard = False
       , noProperty = True
       , auctionPrice = 0
       , hasAntiAcademCard = False
