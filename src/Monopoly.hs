@@ -335,6 +335,7 @@ initGame gen = GameState
       , playerPosition = getPlayerPosition 7 1
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False
       , noProperty = True
       , auctionPrice = 0
       }
@@ -922,8 +923,6 @@ auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (
                               | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False, gamePlayer = nextPlayer gameState}
                               | otherwise = gameState
                                 where
-                                  field = (land gameState) !! (playerCell player)
-                                  player = (players gameState) !! (gamePlayer gameState)
                                   buyer = (findBuyer (players gameState) 0 1 0)
                                   --curr = (players gameState) !! (buyer - 1)
 
@@ -994,20 +993,20 @@ prevSum gameState num
 changeAuctionPriceMinus :: GameState -> Int -> Int
 changeAuctionPriceMinus gameState num 
   | ((auctionPrice player)  == (price field)) = 0
-	| otherwise = (auctionPrice player) - 10
-		where
-			player = (players gameState) !! (num - 1)
-			currPlayer = (players gameState) !! (gamePlayer gameState)
-			field = (land gameState) !! (playerCell currPlayer)
+    | otherwise = (auctionPrice player) - 10
+        where
+            player = (players gameState) !! (num - 1)
+            currPlayer = (players gameState) !! (gamePlayer gameState)
+            field = (land gameState) !! (playerCell currPlayer)
 
 changeAuctionPricePlus :: GameState -> Int -> Int
 changeAuctionPricePlus gameState num 
-	| (auctionPrice player) == 0 = (price field) 
-	| otherwise = (auctionPrice player) + 10
-		where
-			player = (players gameState) !! (num - 1)
-			currPlayer = (players gameState) !! (gamePlayer gameState)
-			field = (land gameState) !! (playerCell currPlayer)
+    | (auctionPrice player) == 0 = (price field) 
+    | otherwise = (auctionPrice player) + 10
+        where
+            player = (players gameState) !! (num - 1)
+            currPlayer = (players gameState) !! (gamePlayer gameState)
+            field = (land gameState) !! (playerCell currPlayer)
 -- | Осуществляем платеж после совершения аукциона
 makePayAuction :: GameState -> Int -> GameState
 makePayAuction gameState num = gameState
