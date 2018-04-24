@@ -363,6 +363,8 @@ initGame gen = GameState
     }
   }
 
+
+-- | Запустить игру заново, если есть победитель
 updateGame :: GameState -> GameState
 updateGame gameState = gameState
   { players =
@@ -471,6 +473,7 @@ updateGame gameState = gameState
     }
   }
 
+-- | Проверка, может ли игрок купить участок, на котором стоит сейчас
 canBuy :: GameState -> Bool
 canBuy gameState = not (isRent ((land gameState) !! (playerCell player)))
   where
@@ -592,7 +595,7 @@ drawHelpMessage2 :: Picture -> Picture
 drawHelpMessage2 image = translate 0 0 image
 
 drawNet :: Picture
-drawNet = pictures
+drawNet = {-pictures
   [ line [(0, -300), (0, 300)]
   , line [(-50, -300), (-50, 300)]
   , line [(-100, -300), (-100, 300)]
@@ -631,7 +634,7 @@ drawNet = pictures
   , line [(-500, 200), (500, 200)]
   , line [(-500, 250), (500, 250)]
   , line [(-500, 300), (500, 300)]
-  ]
+  ]-}
 
 drawAuction :: Picture -> Picture
 drawAuction image = translate 0 0 image
@@ -697,7 +700,7 @@ drawStreetInfo imagesY imagesG gameState
       streetInfoY = imagesY !! (numCurrentStreet (menuPledgeState gameState))
       streetInfoG = imagesG !! (numCurrentStreet (menuPledgeState gameState))
 
-
+-- | Нарисовать кнопку, чтобы по ней заходить в меню залога
 drawPledgeButton :: Picture -> GameState -> Picture
 drawPledgeButton image gameState
   | not (noProperty player) = translate x y (scale r r image)
@@ -1031,6 +1034,7 @@ makePayAuction gameState num = gameState
 isPledgeFeature :: Point -> Bool
 isPledgeFeature (x, y) = x < -400 && y < -220
 
+-- | Обработка нажатий мыши в меню залога
 pledgeHandle :: GameState -> Point -> GameState
 pledgeHandle gameState mouse
   | (isNextStreetPress mouse) = nextPledgeStreet gameState
@@ -1051,9 +1055,11 @@ isPrevStreetPress (x, y) = x < -520 && x > -575 && y > 150 && y < 250
 pledgeStreetPress :: Point -> Bool
 pledgeStreetPress (x, y) = y > -75 && y < 75 && x < 100 && x > -350
 
+-- | Проверка, нажата ли клавиша выхода из меню залога
 exitFromPledgeMenu :: Point -> Bool
 exitFromPledgeMenu (x, y) = x > 0 && y < 0
 
+-- | Заложить/разложить выбранную улицу
 doPledgeStreet :: GameState -> GameState
 doPledgeStreet gameState
   | (isPledge ((land gameState) !! (numCurrentStreet (menuPledgeState gameState))))
@@ -1071,9 +1077,11 @@ doPledgeStreet gameState
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
 
+-- | Проверка, больше ли баланс игрока заданного значения
 hasMoney :: Player -> Int -> Bool
 hasMoney player summ = (money player) > summ
 
+-- | Изменить в списке улиц статус залога одной из них
 changePledgeStatus :: [Street] -> Int -> [Street]
 changePledgeStatus streets num = firstStreets ++ [street {isPledge = not (isPledge street)}] ++ lastStreets
   where
@@ -1081,6 +1089,7 @@ changePledgeStatus streets num = firstStreets ++ [street {isPledge = not (isPled
     street  = streets !! num
     lastStreets = reverse (take ((length streets) - num - 1) (reverse streets))
 
+-- | Если нажата стрелка вправо, то изменить выводимую улицу на следующую
 nextPledgeStreet :: GameState -> GameState
 nextPledgeStreet gameState = gameState
     { menuPledgeState = MenuPledgeState
@@ -1088,6 +1097,7 @@ nextPledgeStreet gameState = gameState
       }
     }
 
+-- | -----||----- влево, на предыдущую
 prevPledgeStreet :: GameState -> GameState
 prevPledgeStreet gameState = gameState
   { menuPledgeState = MenuPledgeState
@@ -1095,6 +1105,7 @@ prevPledgeStreet gameState = gameState
     }
   }
 
+-- | Найти следующую игроку, которой владеет заданный игрок
 getNextStreetWithOwner :: [Street] -> Int -> Int -> Int
 getNextStreetWithOwner streets currStreet playerNum
   | (owner (streets !! (mod (currStreet + 1) 40))) == playerNum = mod (currStreet + 1) 40
@@ -1105,6 +1116,7 @@ getPrevStreetWithOwner streets currStreet playerNum
   | (owner (streets !! (mod (currStreet - 1 + 40) 40))) == playerNum = mod (currStreet - 1 + 40) 40
   | otherwise = getPrevStreetWithOwner streets (mod (currStreet - 1 + 40) 40) playerNum
 
+-- | Обработчик событий в стартовом меню
 menuHandle :: GameState -> Point -> GameState
 menuHandle gameState mouse
   | (isPlayersCountPlus mouse) && (countPlayers gameState) <= 5 = changePlayersCount gameState 1
@@ -1213,6 +1225,7 @@ haveWinner gameState
   | (length (filter haveMoney (take (countPlayers gameState) (players gameState)))) >= 2 = False
   | otherwise = True
 
+-- | Проверка, есть ли деньги у игрока
 haveMoney :: Player -> Bool
 haveMoney player = (money player) > 0
 
@@ -1234,7 +1247,8 @@ doStep gameState | (haveWinner gameState) = gameState
     prevPlayer = (players gameState) !! (mod ((gamePlayer gameState) - 1) (countPlayers gameState))
     player = (players gameState) !! (gamePlayer gameState)
 
-changeAcademStatus :: GameState -> GameState
+-- | Если игрок в академе, то уменьшить количество ходов, которые ему осталось пропустить или выйти из академа
+hangeAcademStatus :: GameState -> GameState
 changeAcademStatus gameState
   | (missSteps player) == 0 = gameState {players = firstPlayers ++ [(player) { inAcadem = False }] ++ lastPlayers }
   | otherwise = gameState { players = firstPlayers ++ [(player) { missSteps = (missSteps player) - 1}] ++ lastPlayers }
