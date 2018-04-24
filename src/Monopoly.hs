@@ -366,7 +366,6 @@ initGame gen = GameState
     }
   }
 
-
 -- | Запустить игру заново, если есть победитель
 updateGame :: GameState -> GameState
 updateGame gameState = gameState
@@ -1313,12 +1312,16 @@ makeStepFeatures gameState
     -- Если поле нельзя купить => нужно отдать налоги и дать деньги владельцу
     -- и перейти к следующему игроку
   | currentField == 30 = doAcadem gameState
+  | playersMoney <= (price currStreet) = gameState { gamePlayer = nextPlayer gameState, typeStep = stepGo }
   | not (canBuy gameState) && not (isChanceLand currentStreet) = gameNextPlayer (getPriceRent (payPriceRent gameState))
   | otherwise = gameState
     where
       currentField = (playerCell player)
       currentStreet = (land gameState) !! (currentField)
       player = (players gameState) !! (gamePlayer gameState)
+      playersMoney = (money ((players gameState) !! (gamePlayer gameState)))
+      currStreet  = (land gameState) !! cell
+      cell = (playerCell player)
 
 doAcadem :: GameState -> GameState
 doAcadem gameState 
