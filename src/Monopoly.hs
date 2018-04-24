@@ -4,7 +4,7 @@ import Graphics.Gloss.Data.Vector()
 import Graphics.Gloss.Interface.Pure.Game
 import Const
 import Model
-import Debug.Trace
+import Debug.Trace()
 import System.Random
 
 -- | Запустить моделирование с заданным начальным состоянием вселенной.
@@ -445,6 +445,7 @@ updateGame gameState = gameState
       , playerPosition = getPlayerPosition 7 1
       , inAcadem = False
       , missSteps = 0
+      , hasAntiAcademCard = False 
       , noProperty = True
       , auctionPrice = 0
       }
@@ -496,9 +497,9 @@ drawGameState images gameState
     [ (imagePledgeMenu images)
     , drawStreetInfo (imagesFieldYellow images) (imagesFieldGreen images) gameState
     , drawNet
-    ])
+    ]) 
   | (isAuction gameState) = pictures (
-    [ drawAuction gameState (imageAuction images)
+    [ drawAuction (imageAuction images) 
     , drawAuctionInfo gameState
     , drawNet] ++ moneys)
   | (haveWinner gameState) = pictures (      -- Если игра закончена и есть победитель
@@ -574,11 +575,11 @@ drawGameState images gameState
     help = [ drawQuestion (imageQuestion images) ]
 
 drawInfoPic :: GameState -> [Picture] -> Picture
-drawInfoPic gameState pictures = translate 100 20 (scale 0.4 0.4 image)
+drawInfoPic gameState pictures_list = translate 100 20 (scale 0.4 0.4 image)
   where
     player = (players gameState) !! (gamePlayer gameState)
     num = (playerCell player)
-    image = pictures !! num
+    image = pictures_list !! num
 
 drawQuestion :: Picture -> Picture
 drawQuestion image = translate 660 400 image
@@ -630,11 +631,10 @@ drawNet = pictures
   , line [(-500, 250), (500, 250)]
   , line [(-500, 300), (500, 300)]
   ]
-  
--- | Меню аукциона
-drawAuction :: GameState -> Picture -> Picture
-drawAuction _ image = translate 0 0 image
 
+drawAuction :: Picture -> Picture
+drawAuction image = translate 0 0 image
+  
 -- | Ставки игроков на аукционе
 drawAuctionInfo :: GameState -> Picture
 drawAuctionInfo gameState = pictures
@@ -1073,7 +1073,7 @@ doPledgeStreet gameState
       lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
 
 hasMoney :: Player -> Int -> Bool
-hasMoney player sum = (money player) > sum
+hasMoney player summ = (money player) > summ
 
 changePledgeStatus :: [Street] -> Int -> [Street]
 changePledgeStatus streets num = firstStreets ++ [street {isPledge = not (isPledge street)}] ++ lastStreets
@@ -1402,10 +1402,10 @@ changeChanceCardNumber :: GameState -> GameState
 changeChanceCardNumber gameState =
   let
     list = intSeqChanceCards gameState
-    number = head list
+    next_number = head list
     nextList = drop 1 list
   in gameState
-    { currentChanceCard = number
+    { currentChanceCard = next_number
     , intSeqChanceCards = nextList
     }
 
@@ -1464,11 +1464,11 @@ movePlayer player cubesSum = player
       newPlayerCell = (mod ((playerCell player) + cubesSum) fieldsNumber)
 
 movePlayerNewPosition :: Player -> Int -> Player
-movePlayerNewPosition player newPosition 
-    | newPosition == -1 = player
+movePlayerNewPosition player newPlayerPosition
+    | newPlayerPosition == -1 = player
     | otherwise = player 
-      { playerCell = newPosition
-      , playerPosition = getPlayerPosition (number player) newPosition
+      { playerCell = newPlayerPosition
+      , playerPosition = getPlayerPosition (number player) newPlayerPosition
       }
 
 -- | Для игрока получить местоположение его фишки на игровом поле по номеру клетки
