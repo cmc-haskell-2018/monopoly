@@ -1266,7 +1266,7 @@ startMoney gameState | (cell + cubesSum) >= 40 = gameState { players = firstPlay
 
 -- | Переместиться и выполнить действия
 makeMove :: GameState -> GameState
-makeMove gameState = throwCubes (makeStepFeatures (changePlayerCell (startMoney gameState)))
+makeMove gameState = makeStepFeatures (changePlayerCell (startMoney (throwCubes gameState)))
 
 makeStepFeatures :: GameState -> GameState
 makeStepFeatures gameState
