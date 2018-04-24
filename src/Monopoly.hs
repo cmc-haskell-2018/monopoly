@@ -595,7 +595,7 @@ drawHelpMessage2 :: Picture -> Picture
 drawHelpMessage2 image = translate 0 0 image
 
 drawNet :: Picture
-drawNet = {-pictures
+drawNet = Blank {-pictures
   [ line [(0, -300), (0, 300)]
   , line [(-50, -300), (-50, 300)]
   , line [(-100, -300), (-100, 300)]
@@ -1248,7 +1248,7 @@ doStep gameState | (haveWinner gameState) = gameState
     player = (players gameState) !! (gamePlayer gameState)
 
 -- | Если игрок в академе, то уменьшить количество ходов, которые ему осталось пропустить или выйти из академа
-hangeAcademStatus :: GameState -> GameState
+changeAcademStatus :: GameState -> GameState
 changeAcademStatus gameState
   | (missSteps player) == 0 = gameState {players = firstPlayers ++ [(player) { inAcadem = False }] ++ lastPlayers }
   | otherwise = gameState { players = firstPlayers ++ [(player) { missSteps = (missSteps player) - 1}] ++ lastPlayers }
