@@ -966,24 +966,48 @@ setAuctionPrice (player : other) street numPlayer countPlayer currPlayer | (numP
 
 -- | Увеличиваем сумму ставки на следующую +10
 nextSum :: GameState -> Int -> GameState
-nextSum gameState num | (num /= currPlayer) && ((money player) >= ((auctionPrice player) + 10)) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) + 10}] ++ lastPlayers} 
-                      | otherwise = gameState
-                      where
-                        player = (players gameState) !! (num - 1)
-                        firstPlayers = take (num - 1) (players gameState)
-                        lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
-                        currPlayer = (gamePlayer gameState)
+nextSum gameState num 
+  | ((num - 1) /= currPlayer) && ((money player) >= ((auctionPrice player) + 10)) && (num <= (countPlayers gameState)) 
+    = gameState 
+      { players = firstPlayers ++ [player {auctionPrice = changeAuctionPricePlus gameState num}] ++ lastPlayers} 
+  | otherwise = gameState
+    where
+      player = (players gameState) !! (num - 1)
+      firstPlayers = take (num - 1) (players gameState)
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+      currPlayer = (gamePlayer gameState)
+      --currPlayer = (players gameState) !! (gamePlayer gameState)
+      --field = (land gameState) !! (playerCell currPlayer)
 
 -- | Уменьшаем сумму ставки на следующую -10
-prevSum :: GameState -> Int -> Street -> GameState
-prevSum gameState num _ | (num /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) - 10}] ++ lastPlayers}
-                             | otherwise = gameState
-                              where
-                                player = (players gameState) !! (num - 1)
-                                firstPlayers = take (num - 1) (players gameState)
-                                lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
-                                currPlayer = (gamePlayer gameState)
+prevSum :: GameState -> Int -> GameState
+prevSum gameState num 
+  | ((num - 1) /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) && (num <= (countPlayers gameState)) 
+    = gameState {players = firstPlayers ++ [player {auctionPrice = changeAuctionPriceMinus gameState num}] ++ lastPlayers} 
+  | otherwise = gameState
+    where
+      player = (players gameState) !! (num - 1)
+      firstPlayers = take (num - 1) (players gameState)
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
+      currPlayer = (gamePlayer gameState)
 
+changeAuctionPriceMinus :: GameState -> Int -> Int
+changeAuctionPriceMinus gameState num 
+  | ((auctionPrice player)  == (price field)) = 0
+	| otherwise = (auctionPrice player) - 10
+		where
+			player = (players gameState) !! (num - 1)
+			currPlayer = (players gameState) !! (gamePlayer gameState)
+			field = (land gameState) !! (playerCell currPlayer)
+
+changeAuctionPricePlus :: GameState -> Int -> Int
+changeAuctionPricePlus gameState num 
+	| (auctionPrice player) == 0 = (price field) 
+	| otherwise = (auctionPrice player) + 10
+		where
+			player = (players gameState) !! (num - 1)
+			currPlayer = (players gameState) !! (gamePlayer gameState)
+			field = (land gameState) !! (playerCell currPlayer)
 -- | Осуществляем платеж после совершения аукциона
 makePayAuction :: GameState -> Int -> GameState
 makePayAuction gameState num = gameState
