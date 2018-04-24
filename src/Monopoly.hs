@@ -575,10 +575,10 @@ drawGameState images gameState
 
 drawInfoPic :: GameState -> [Picture] -> Picture
 drawInfoPic gameState pictures = translate 100 20 (scale 0.4 0.4 image)
-	where
-		player = (players gameState) !! (gamePlayer gameState)
-		num = (playerCell player)
-		image = pictures !! num
+  where
+    player = (players gameState) !! (gamePlayer gameState)
+    num = (playerCell player)
+    image = pictures !! num
 
 drawQuestion :: Picture -> Picture
 drawQuestion image = translate 660 400 image
@@ -876,7 +876,6 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     Just False -> gameState
       { players = setAuctionPrice (players gameState) field 0 (countPlayers gameState) (gamePlayer gameState)
       , typeStep = stepGo
-      , gamePlayer = nextPlayer gameState
       , isAuction = True
       }
     Nothing -> gameState
@@ -920,7 +919,7 @@ auctionHandle :: GameState -> Point -> GameState
 auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (isNextSumPress mouse)
                               | (isPrevSumPress mouse) > 0 = prevSum gameState (isPrevSumPress mouse) field
                               | (isExitFromAuction mouse) && (buyer /= 0) = (makePayAuction gameState buyer)
-                              | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False}
+                              | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False, gamePlayer = nextPlayer gameState}
                               | otherwise = gameState
                                 where
                                   field = (land gameState) !! (playerCell player)
@@ -977,7 +976,7 @@ nextSum gameState num | (num /= currPlayer) && ((money player) >= ((auctionPrice
 
 -- | Уменьшаем сумму ставки на следующую -10
 prevSum :: GameState -> Int -> Street -> GameState
-prevSum gameState num _ | (num /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) - 10}] ++ lastPlayers} 
+prevSum gameState num _ | (num /= currPlayer) && ((money player) >= (auctionPrice player)) && ((auctionPrice player) >= 10) = gameState {players = firstPlayers ++ [player {auctionPrice = (auctionPrice player) - 10}] ++ lastPlayers}
                              | otherwise = gameState
                               where
                                 player = (players gameState) !! (num - 1)
@@ -992,6 +991,7 @@ makePayAuction gameState num = gameState
   , players = firstPlayers ++ [setNoProperty (changeBalance player priceValue)] ++ lastPlayers
   , land = firstLands ++ [changeOwner currentLand (num - 1) ] ++ lastLands
   , isAuction = False
+  , gamePlayer = nextPlayer gameState
   }
     where
       currPlayer = (players gameState) !! (gamePlayer gameState)
