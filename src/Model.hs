@@ -9,6 +9,7 @@ import Graphics.Gloss.Interface.Pure.Game
 
 data Images = Images
   { imageStartMenu :: Picture
+  , imagePause :: Picture
   , imagesPiece :: [Picture]
   , imagePlayingField :: Picture
   , imagePayMenu :: Picture
@@ -47,6 +48,7 @@ data GameState = GameState
   , isPledgeMenu :: Bool
   , isAuction :: Bool
   , prevTypeStep :: Int
+  , isPauseEnd :: Bool
   }
 
 data MenuPledgeState = MenuPledgeState

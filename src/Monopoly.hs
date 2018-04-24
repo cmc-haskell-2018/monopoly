@@ -129,8 +129,10 @@ loadImages = do
   Just questionPic <- loadJuicyPNG "images/question.png"
   Just help1Pic <- loadJuicyPNG "images/help1.png"
   Just help2Pic <- loadJuicyPNG "images/help2.png"
+  Just pauseEnd <- loadJuicyPNG "images/pauseend.png"
   return Images
     { imageStartMenu = startMenu
+    , imagePause = scale 0.8 0.8 pauseEnd
     , imagesPiece =
       [ scale 0.2 0.2 piece1
       , scale 0.2 0.2 piece2
@@ -337,6 +339,7 @@ initGame gen = GameState
       , missSteps = 0
       , noProperty = True
       , auctionPrice = 0
+      , hasAntiAcademCard = False
       }
     ]
   , cubes = Cubes
@@ -357,6 +360,7 @@ initGame gen = GameState
   , isMoveToAcadem = False
   , isPledgeMenu = False
   , isAuction = False
+  , isPauseEnd = False
   , menuPledgeState = MenuPledgeState
     { numCurrentStreet = 0
     }
@@ -465,6 +469,7 @@ updateGame gameState = gameState
   , isMoveToAcadem = False
   , isPledgeMenu = False
   , isAuction = False
+  , isPauseEnd = False
   , menuPledgeState = MenuPledgeState
     { numCurrentStreet = 0
     }
@@ -497,7 +502,13 @@ drawGameState images gameState
     [ (imagePledgeMenu images)
     , drawStreetInfo (imagesFieldYellow images) (imagesFieldGreen images) gameState
     , drawNet
-    ]) 
+    ])
+  | (isPauseEnd gameState) = pictures (
+    common ++ moneys ++ pieces ++
+    [ drawPauseEnd (imagePause images) gameState
+    , drawNet
+    ]
+    ) 
   | (isAuction gameState) = pictures (
     [ drawAuction (imageAuction images) 
     , drawAuctionInfo gameState
@@ -573,6 +584,9 @@ drawGameState images gameState
       , drawNet 
       ] ++ moneys ++ pieces ++ help
     help = [ drawQuestion (imageQuestion images) ]
+
+drawPauseEnd :: Picture -> GameState -> Picture
+drawPauseEnd image _ = translate 0 0 image
 
 drawInfoPic :: GameState -> [Picture] -> Picture
 drawInfoPic gameState pictures_list = translate 100 20 (scale 0.4 0.4 image)
@@ -858,6 +872,7 @@ drawPlayingField image = translate 0 0 image
 handleGame :: Event -> GameState -> GameState
 handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (showHelp mouse) = (changeStateToHelp gameState)
+  | (isPauseEnd gameState) = handlePause gameState mouse
   | (typeStep gameState) == stepShowHelp1 && (nextHelp mouse) = (changeToNextHelp gameState)
   | (typeStep gameState) == stepShowHelp2 && (nextHelp mouse) = (changeToPrevHelp gameState)
   | ((typeStep gameState) == stepShowHelp1 || (typeStep gameState) == stepShowHelp2) && (closeHelp mouse) = (gameCloseHelp gameState)
@@ -883,7 +898,18 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
     where
       player = (players gameState) !! (gamePlayer gameState)
       field = (land gameState) !! (playerCell player)
+handleGame (EventKey (Char 'p') _ _ _) gameState = gameState {isPauseEnd = True}
 handleGame _ gameState = gameState
+
+handlePause :: GameState -> Point -> GameState
+handlePause gameState (x, y) 
+  | x >= 0 && x <= 150 && y >= -90 && y <= 30 = gameState {isPauseEnd = False}
+  | x >= -150 && x < 0 && y >= -90 && y <= 30 = (returnBoughtPlace gameState) {players = firstPlayers ++ [player] ++ lastPlayers, isPauseEnd = False, gamePlayer = nextPlayer gameState}
+  | otherwise = gameState
+    where
+      firstPlayers = take (gamePlayer gameState) (players gameState)
+      player = ((players gameState) !! (gamePlayer gameState)) {money = -100}
+      lastPlayers = reverse (take (length (players gameState) - (length firstPlayers) - 1) (reverse (players gameState)))
 
 closeHelp :: Point -> Bool
 closeHelp (x, y) = 327 < x && x < 368 && 192 < y && y < 233
@@ -922,8 +948,8 @@ auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (
                               | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False, gamePlayer = nextPlayer gameState}
                               | otherwise = gameState
                                 where
-                                  field = (land gameState) !! (playerCell player)
-                                  player = (players gameState) !! (gamePlayer gameState)
+                                  --field = (land gameState) !! (playerCell player)
+                                  --player = (players gameState) !! (gamePlayer gameState)
                                   buyer = (findBuyer (players gameState) 0 1 0)
                                   --curr = (players gameState) !! (buyer - 1)
 
@@ -994,20 +1020,20 @@ prevSum gameState num
 changeAuctionPriceMinus :: GameState -> Int -> Int
 changeAuctionPriceMinus gameState num 
   | ((auctionPrice player)  == (price field)) = 0
-	| otherwise = (auctionPrice player) - 10
-		where
-			player = (players gameState) !! (num - 1)
-			currPlayer = (players gameState) !! (gamePlayer gameState)
-			field = (land gameState) !! (playerCell currPlayer)
+  | otherwise = (auctionPrice player) - 10
+    where
+      player = (players gameState) !! (num - 1)
+      currPlayer = (players gameState) !! (gamePlayer gameState)
+      field = (land gameState) !! (playerCell currPlayer)
 
 changeAuctionPricePlus :: GameState -> Int -> Int
 changeAuctionPricePlus gameState num 
-	| (auctionPrice player) == 0 = (price field) 
-	| otherwise = (auctionPrice player) + 10
-		where
-			player = (players gameState) !! (num - 1)
-			currPlayer = (players gameState) !! (gamePlayer gameState)
-			field = (land gameState) !! (playerCell currPlayer)
+  | (auctionPrice player) == 0 = (price field) 
+  | otherwise = (auctionPrice player) + 10
+    where
+      player = (players gameState) !! (num - 1)
+      currPlayer = (players gameState) !! (gamePlayer gameState)
+      field = (land gameState) !! (playerCell currPlayer)
 -- | Осуществляем платеж после совершения аукциона
 makePayAuction :: GameState -> Int -> GameState
 makePayAuction gameState num = gameState
