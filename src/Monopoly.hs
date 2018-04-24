@@ -917,7 +917,7 @@ isAgainPlay (x, y) = y < -30 && y > -130 && x > -160 && x < 145
 -- | Состояние игры при аукционе
 auctionHandle :: GameState -> Point -> GameState
 auctionHandle gameState mouse | (isNextSumPress mouse) > 0 = nextSum gameState (isNextSumPress mouse)
-                              | (isPrevSumPress mouse) > 0 = prevSum gameState (isPrevSumPress mouse) field
+                              | (isPrevSumPress mouse) > 0 = prevSum gameState (isPrevSumPress mouse)
                               | (isExitFromAuction mouse) && (buyer /= 0) = (makePayAuction gameState buyer)
                               | (isExitFromAuction mouse) && (buyer == 0) = gameState {typeStep = stepGo, isAuction = False, gamePlayer = nextPlayer gameState}
                               | otherwise = gameState
