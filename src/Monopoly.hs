@@ -810,7 +810,7 @@ drawCurrPlayer image gameState = translate x y image
 -- | Вывод баланса игрока
 drawMoney :: [Player] -> Int -> Int -> Picture
 drawMoney allPlayers num maxCount
-  | (money player > 0) && (num < maxCount) = translate x y (scale r r (text moneyStr))
+  | (money player > 0) && (num < maxCount) = translate x y (scale r r (color (getColor player) (text moneyStr)))
   | (num >= maxCount) = Blank
   | otherwise = translate x y (scale r r (color red (text noMoneyStr)))
     where
@@ -820,6 +820,16 @@ drawMoney allPlayers num maxCount
       numberStr = show (number player)
       noMoneyStr = "Player " ++ numberStr ++ ": lost"
       player = allPlayers !! num
+
+getColor :: Player -> Color
+getColor player
+  | (colour player) == 1 = green
+  | (colour player) == 2 = (makeColor 255 0 255 0)
+  | (colour player) == 3 = violet
+  | (colour player) == 4 = blue
+  | (colour player) == 5 = black --(makeColor 255 100 0 0.5) --yellow
+  | otherwise = red
+
 
 -- | Вывод меню покупки
 drawPayMenu :: Picture -> Picture
