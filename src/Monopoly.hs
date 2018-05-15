@@ -375,6 +375,8 @@ initGame gen = GameState
     { numCurrentStreet = 0
     }
   , streetsToShow = []
+  , countShowStreets = 0
+  , playerShowStreets = 7
   }
 
 -- | Запустить игру заново, если есть победитель
@@ -488,6 +490,8 @@ updateGame gameState = gameState
     { numCurrentStreet = 0
     }
   , streetsToShow = []
+  , countShowStreets = 0
+  , playerShowStreets = 7
   }
 
 -- | Проверка, может ли игрок купить участок, на котором стоит сейчас
@@ -994,7 +998,8 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (typeStep gameState) == stepShowHelp2 && (nextHelp mouse) = (changeToPrevHelp gameState)
   | ((typeStep gameState) == stepShowHelp1 || (typeStep gameState) == stepShowHelp2) && (closeHelp mouse) = (gameCloseHelp gameState)
   | (haveWinner gameState) && (isAgainPlay mouse) = (updateGame gameState)
-  | (isShowStreetsButton mouse) = handleShowStreets gameState { isShowStreets = True }
+  | (isShowStreetsButton mouse) && ((playerShowStreets gameState) /= (gamePlayer gameState)) = handleShowStreets gameState { isShowStreets = True, countShowStreets = 1 , playerShowStreets = (gamePlayer gameState) }
+  | (isShowStreetsButton mouse) = handleShowStreets gameState { isShowStreets = True, countShowStreets = 1 , streetsToShow = [] }
   | (isShowStreets gameState) = gameState { streetsToShow = [], isShowStreets = False }
   | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (changeChanceCardNumber (applyChance (gameState { typeStep = stepGo })))
   | (typeStep gameState) == stepShowAntiAcademCard = gameNextPlayer (gameState { typeStep = stepGo })

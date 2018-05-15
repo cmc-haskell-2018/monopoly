@@ -56,6 +56,8 @@ data GameState = GameState
   , isShowStreets :: Bool
   , streetsToShow :: [Street]
   , wantToRestart :: Bool
+  , countShowStreets :: Int
+  , playerShowStreets :: Int
   }
 
 data MenuPledgeState = MenuPledgeState
