@@ -70,7 +70,7 @@ data Player = Player
   , money :: Int       -- Баланс
   , playerCell :: Int     -- На какой клетке поле находится
   , playerPosition :: Point  -- Где на поле нарисована его фишка (координаты)
-  , inAcadem :: Bool -- Находится ли в академе
+  , inAcadem :: Bool -- Находится ли в academе
   , missSteps :: Int -- Сколько ходов осталось пропустить
   , hasAntiAcademCard :: Bool
   , noProperty :: Bool -- Есть ли имущество
@@ -178,7 +178,7 @@ getLand =
       , amGroup = 2
       }
     , Street -- id = 4
-      { name = "Налог" -- Смотреть описание для "Сверхналога"
+      { name = "nalog" -- Смотреть описание для "Сверхnalogа"
       , priceRent = 200
       , price = 0
       , owner = 6
@@ -211,7 +211,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 7 
-      { name = "Шанс"
+      { name = "chance"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -244,7 +244,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 10
-      { name = "Академ"
+      { name = "academ"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -321,7 +321,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 17
-      { name = "Общественная казна"
+      { name = "kazna"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -354,7 +354,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 20
-      { name = "Бесплатная курилка"
+      { name = "free kurilka"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -376,7 +376,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 22
-      { name = "Шанс"
+      { name = "chance"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -464,7 +464,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 30
-      { name = "Отправляйся в академ"
+      { name = "go to academ"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -497,7 +497,7 @@ getLand =
       , amGroup = 3
       }
     , Street -- id = 33
-      { name = "Общественая казна"
+      { name = "kazna"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -530,7 +530,7 @@ getLand =
       , amGroup = 4
       }
     , Street -- id = 36
-      { name = "Шанс"
+      { name = "chance"
       , price = 0
       , isRent = True
       , priceRent = 0
@@ -552,7 +552,7 @@ getLand =
       , amGroup = 2
       }
     , Street -- id = 38
-      { name = "Сверхналог"
+      { name = "Сверхnalog"
       , priceRent = 100
       , price = 0
       , owner = 6 -- По алгоритму работы никто не сможет купить, потому что isRent = True

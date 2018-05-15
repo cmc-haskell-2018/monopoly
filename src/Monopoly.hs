@@ -1492,7 +1492,7 @@ setAcademStatus player = player
 
 -- | True, если текущее поле - "Шанс"
 isChanceLand :: Street -> Bool
-isChanceLand street = (name street)  == "Шанс"
+isChanceLand street = (name street)  == "chance"
 
 drawAntiAcademCard :: Picture
 drawAntiAcademCard = translate x y (scale r r (color red (text "Player has antiacadem card! :))))")))
