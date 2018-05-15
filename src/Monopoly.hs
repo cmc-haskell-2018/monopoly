@@ -788,18 +788,6 @@ drawPledgeButton image gameState
       r = 1
       player = (players gameState) !! (gamePlayer gameState)
 
---drawHouseButton :: Picture -> GameState -> Picture
---drawHouseButton image gameState
-
-{-drawFieldOwner :: Picture -> GameState -> Picture
-drawFieldOwner image gameState = pictures
-  [ translate 0 0 image
-  , translate x y (scale 0.2 0.2 (text "HI"))
-  ]
-  where
-    (x, y) = (100, 100)
-    player = (players gameState) !! (gamePlayer gameState)-}
-
 drawCurFieldInfo :: Picture -> GameState -> Picture
 drawCurFieldInfo image gameState = pictures
   [ translate 530 0 image
@@ -1576,10 +1564,8 @@ throwCubes :: GameState -> GameState
 throwCubes gameState =
   let
     list = intSeq gameState
-    --first = head list
-    --second = head (tail list)
-    first = 1
-    second = 5
+    first = head list
+    second = head (tail list)
     nextList = drop 2 list
   in gameState
     { cubes = Cubes
