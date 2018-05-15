@@ -130,6 +130,10 @@ loadImages = do
   Just help1Pic <- loadJuicyPNG "images/help1.png"
   Just help2Pic <- loadJuicyPNG "images/help2.png"
   Just pauseEnd <- loadJuicyPNG "images/pauseend.png"
+  Just currField <- loadJuicyPNG "images/currentField.png"
+  Just showStreets <- loadJuicyPNG "images/showStreets.png"
+  Just infoAboutStreets <- loadJuicyPNG "images/infoAboutStreet.png"
+  --Just currField <- loadJuicyPNG "images/currentField.png"
   return Images
     { imageStartMenu = startMenu
     , imagePause = scale 0.8 0.8 pauseEnd
@@ -251,6 +255,10 @@ loadImages = do
     , imageQuestion = scale 0.2 0.2 questionPic
     , imageHelp1 = scale 1 1 help1Pic
     , imageHelp2 = scale 1 1 help2Pic
+    --, imageFieldOwner = scale 0.6 0.6 fieldOwner
+    , imageCurField = scale 0.8 0.8 currField
+    , imageShowStreets = scale 0.5 0.5 showStreets
+    , imageInfoAboutStreets = scale 0.8 0.8 infoAboutStreets
     }
 
 -- | Сгенерировать начальное состояние игры.
@@ -361,9 +369,12 @@ initGame gen = GameState
   , isPledgeMenu = False
   , isAuction = False
   , isPauseEnd = False
+  , isShowStreets = False
+  , wantToRestart = False
   , menuPledgeState = MenuPledgeState
     { numCurrentStreet = 0
     }
+  , streetsToShow = []
   }
 
 -- | Запустить игру заново, если есть победитель
@@ -471,9 +482,12 @@ updateGame gameState = gameState
   , isPledgeMenu = False
   , isAuction = False
   , isPauseEnd = False
+  , isShowStreets = False
+  , wantToRestart = False
   , menuPledgeState = MenuPledgeState
     { numCurrentStreet = 0
     }
+  , streetsToShow = []
   }
 
 -- | Проверка, может ли игрок купить участок, на котором стоит сейчас
@@ -509,6 +523,7 @@ drawGameState images gameState
     common ++ moneys ++ pieces ++
     [ drawPauseEnd (imagePause images) gameState
     , drawNet
+    , drawShowStreets (imageShowStreets images)
     ]
     ) 
   | (isAuction gameState) = pictures (
@@ -524,42 +539,67 @@ drawGameState images gameState
     common ++
     [ drawPledgeButton (imagePledgeButton images) gameState
     , drawMoveAcademMessage (imageMoveAcadem images)
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
     ] )
   | (isInAcadem gameState) = pictures (
     common ++
     [ drawPledgeButton (imagePledgeButton images) gameState
     , drawAcademMessage (imagesAcademLeft images) gameState
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
     ] )
+  | (isShowStreets gameState) = pictures (
+    common ++ moneys ++ pieces ++ 
+    [ drawShowStreets (imageShowStreets images)] ++ drawInfoAboutPlayersStreets (imageInfoAboutStreets images) gameState
+    )
   | (typeStep gameState) == stepGo = pictures (
     common ++
-    [ drawPledgeButton (imagePledgeButton images) gameState ]
+    [ drawPledgeButton (imagePledgeButton images) gameState 
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
+    ]
     )
   | (typeStep gameState) == stepPay = pictures (    -- Меню для совершения покупки
     common ++ 
     [ drawPayMenu (imagePayMenu images)
     , drawInfoPic gameState (imagesFieldGreen images)
     , drawPledgeButton (imagePledgeButton images) gameState
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
     ]
     )
   | (typeStep gameState) == stepShowChanceCard = pictures (
-    common
-    ++ [ drawChanceCard gameState ]
+    common ++ 
+    [ drawChanceCard gameState 
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
+    ]
     )
   | (typeStep gameState) == stepShowAntiAcademCard = pictures (
-    common
-    ++ [ drawAntiAcademCard ] 
+    common ++ 
+    [ drawAntiAcademCard 
+    , drawCurFieldInfo (imageCurField images) gameState
+    , drawShowStreets (imageShowStreets images)
+    ] 
     )
   | (typeStep gameState) == stepShowHelp1 = pictures (
-    common
-    ++ [ drawHelpMessage1 (imageHelp1 images) ]
+    common ++ 
+    [ drawHelpMessage1 (imageHelp1 images) 
+    , drawCurFieldInfo (imageCurField images) gameState
+    ]
   )
   | (typeStep gameState) == stepShowHelp2 = pictures (
-    common
-    ++ [ drawHelpMessage2 (imageHelp2 images) ]
+    common ++ 
+    [ drawHelpMessage2 (imageHelp2 images) 
+    , drawCurFieldInfo (imageCurField images) gameState
+    ]
   )
   | otherwise = pictures (
-    common
-    ++ [ drawPledgeButton (imagePledgeButton images) gameState ]
+    common ++ 
+    [ drawPledgeButton (imagePledgeButton images) gameState 
+    , drawShowStreets (imageShowStreets images)
+    ]
   )
   where
     moneys =
@@ -589,6 +629,30 @@ drawGameState images gameState
 
 drawPauseEnd :: Picture -> GameState -> Picture
 drawPauseEnd image _ = translate 0 0 image
+
+drawShowStreets :: Picture -> Picture
+drawShowStreets image = translate x y image
+  where 
+    (x, y) = (-500, -50)
+
+drawOneStreet :: Street -> Int -> Picture
+drawOneStreet street num = translate x y (scale r r (text str))
+  where
+    r = 0.2
+    (x, y) = (-50, fromIntegral(- num * 15))
+    str = (name street)
+
+drawInfoAboutPlayersStreets :: Picture -> GameState -> [Picture]
+drawInfoAboutPlayersStreets image gameState =  
+  [translate x y image] ++ drawTmpStreets (streetsToShow gameState) 0
+    where
+      (x, y) = 0
+
+drawTmpStreets :: [Street] -> Int -> [Picture]
+drawTmpStreets [] _ = [Blank]
+drawTmpStreets [s] num = [drawOneStreet s num]
+drawTmpStreets (s:streets) num = [drawOneStreet s num] ++ drawTmpStreets streets (num + 3) 
+
 
 drawInfoPic :: GameState -> [Picture] -> Picture
 drawInfoPic gameState pictures_list = translate 100 20 (scale 0.4 0.4 image)
@@ -722,6 +786,40 @@ drawPledgeButton image gameState
       r = 1
       player = (players gameState) !! (gamePlayer gameState)
 
+--drawHouseButton :: Picture -> GameState -> Picture
+--drawHouseButton image gameState
+
+{-drawFieldOwner :: Picture -> GameState -> Picture
+drawFieldOwner image gameState = pictures
+  [ translate 0 0 image
+  , translate x y (scale 0.2 0.2 (text "HI"))
+  ]
+  where
+    (x, y) = (100, 100)
+    player = (players gameState) !! (gamePlayer gameState)-}
+
+drawCurFieldInfo :: Picture -> GameState -> Picture
+drawCurFieldInfo image gameState = pictures
+  [ translate 530 0 image
+  , translate 500 100(scale 0.2 0.2 (text strField))
+  , translate 500 20 (scale 0.2 0.2 (text strOwner))
+  , translate 500 p (scale 0.2 0.2 (text fieldPrice))
+  , translate x y (scale 0.2 0.2 (text fieldRent))
+  --, translate 0 0 (scale 0.2 0.2 (text (show (typeStep gameState))))
+  ]
+    where
+      (x, y) = (500, -150)
+      p = -70
+      player = (players gameState) !! (gamePlayer gameState)
+      currentField = (playerCell player)
+      field = (land gameState) !! currentField
+      strField = (name field)
+      fieldOwner = (owner field)
+      strOwner = "Player " ++ (show fieldOwner)
+      fieldPrice = (show (price field))
+      fieldRent = (show (priceRent field))
+
+
 -- | Прорисовка левого кубика
 drawLeftCube :: GameState -> [Picture] -> Picture
 drawLeftCube gameState pics = translate x y image
@@ -799,6 +897,7 @@ drawPlayersPieces images empty gameState = pictures
       (x4, y4) = (-30, -150)
       (x5, y5) = (-30, -235)
       (x6, y6) = (-30, -320)
+
 
 -- | Показать, чей сейчас ход
 drawCurrPlayer :: Picture -> GameState -> Picture
@@ -889,6 +988,8 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
   | (typeStep gameState) == stepShowHelp2 && (nextHelp mouse) = (changeToPrevHelp gameState)
   | ((typeStep gameState) == stepShowHelp1 || (typeStep gameState) == stepShowHelp2) && (closeHelp mouse) = (gameCloseHelp gameState)
   | (haveWinner gameState) && (isAgainPlay mouse) = (updateGame gameState)
+  | (isShowStreetsButton mouse) = handleShowStreets gameState { isShowStreets = True }
+  | (isShowStreets gameState) = gameState { streetsToShow = [], isShowStreets = False }
   | (typeStep gameState) == stepShowChanceCard = gameNextPlayer (changeChanceCardNumber (applyChance (gameState { typeStep = stepGo })))
   | (typeStep gameState) == stepShowAntiAcademCard = gameNextPlayer (gameState { typeStep = stepGo })
   | (isStartMenu gameState) = menuHandle gameState mouse
@@ -911,7 +1012,22 @@ handleGame (EventKey (MouseButton LeftButton) Down _ mouse) gameState
       player = (players gameState) !! (gamePlayer gameState)
       field = (land gameState) !! (playerCell player)
 handleGame (EventKey (Char 'p') _ _ _) gameState = gameState {isPauseEnd = True}
+handleGame (EventKey (Char 'r') _ _ _) gameState = updateGame gameState
 handleGame _ gameState = gameState
+
+handleShowStreets :: GameState -> GameState
+handleShowStreets gameState = (findPlayerStreets gameState (land gameState))
+
+findPlayerStreets :: GameState -> [Street] -> GameState
+findPlayerStreets gameState [] = gameState
+findPlayerStreets gameState (s:streets)
+  | (owner s) == player = findPlayerStreets gameState { streetsToShow = [s] ++ (streetsToShow gameState) } streets
+  | otherwise = findPlayerStreets gameState streets
+  where
+    player = (gamePlayer gameState)
+
+isShowStreetsButton :: Point -> Bool
+isShowStreetsButton (x, y) = x > -600 && x < -380 && y > -150 && y < 50
 
 handlePause :: GameState -> Point -> GameState
 handlePause gameState (x, y) 
@@ -1140,7 +1256,7 @@ prevPledgeStreet gameState = gameState
     }
   }
 
--- | Найти следующую игроку, которой владеет заданный игрок
+-- | Найти следующую улицу, которой владеет заданный игрок
 getNextStreetWithOwner :: [Street] -> Int -> Int -> Int
 getNextStreetWithOwner streets currStreet playerNum
   | (owner (streets !! (mod (currStreet + 1) 40))) == playerNum = mod (currStreet + 1) 40
@@ -1406,27 +1522,46 @@ applyChance gameState
       balanceFromCard = (balanceChange ((chanceCards gameState) !! chanceCardNumber))
       newPositionFromCard = (newPosition ((chanceCards gameState) !! chanceCardNumber))
 
+
+-- | Проверка принадлежит ли кому-нибудь все улицы из данной группы улиц
+collectedGroup :: [Street] -> Int -> Int -> Int -> Bool
+collectedGroup _ 0 _ _ = False
+collectedGroup _ _ 0 _ = True
+collectedGroup [] _ _ _ = False
+collectedGroup (s:streets) group amount fieldOwner
+  | ((streetGroup s) == group) && ((owner s) == fieldOwner) = collectedGroup streets group (amount - 1) fieldOwner
+  | ((streetGroup s) == group) && ((owner s) /= fieldOwner) = False
+  | otherwise = collectedGroup streets group amount fieldOwner
+
 -- | Заплатить ренту хозяину
 payPriceRent :: GameState -> GameState
-payPriceRent gameState = gameState 
-  { players = firstPlayers ++ [(changeBalance player rentValue)] ++ lastPlayers
-  }
+payPriceRent gameState
+  | collectedGroup (land gameState) (streetGroup field) (amGroup field) (owner field) = gameState 
+    { players = firstPlayers ++ [(changeBalance player (rentValue + 30))] ++ lastPlayers
+    }
+  | otherwise = gameState { players = firstPlayers ++ [(changeBalance player rentValue)] ++ lastPlayers
+    }
     where
       firstPlayers = take (gamePlayer gameState) (players gameState)
       player = (players gameState) !! (gamePlayer gameState)
       lastPlayers = reverse (take ((length (players gameState)) - (length firstPlayers) - 1) (reverse (players gameState)))
       rentValue = (priceRent ((land gameState) !! (playerCell player))) * (-1)
+      field = (land gameState) !! (playerCell player)
 
 -- | Получить ренту от другого игрока
 getPriceRent :: GameState -> GameState
-getPriceRent gameState = gameState
-  { players = firstPlayers ++ [(changeBalance player rentValue)] ++ lastPlayers
+getPriceRent gameState 
+  | collectedGroup (land gameState) (streetGroup field) (amGroup field) (owner field) = gameState 
+    { players = firstPlayers ++ [(changeBalance player (rentValue + 30))] ++ lastPlayers
+    }
+  | otherwise = gameState { players = firstPlayers ++ [(changeBalance player rentValue)] ++ lastPlayers
   }
     where
       player = (players gameState) !! (owner ((land gameState) !! (playerCell ((players gameState) !! (gamePlayer gameState)))))
       firstPlayers = take ((number player) - 1) (players gameState)
       lastPlayers = reverse (take (length (players gameState) - (number player)) (reverse (players gameState)))
       rentValue = (priceRent ((land gameState) !! (playerCell player)))
+      field = (land gameState) !! (playerCell player)
 
 -- | Изменить баланс игрока
 changeBalance :: Player -> Int -> Player
@@ -1439,8 +1574,10 @@ throwCubes :: GameState -> GameState
 throwCubes gameState =
   let
     list = intSeq gameState
-    first = head list
-    second = head (tail list)
+    --first = head list
+    --second = head (tail list)
+    first = 1
+    second = 5
     nextList = drop 2 list
   in gameState
     { cubes = Cubes

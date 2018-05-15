@@ -27,6 +27,10 @@ data Images = Images
   , imagesFieldGreen :: [Picture]
   , imageHelp1 :: Picture
   , imageHelp2 :: Picture
+  --, imageFieldOwner :: Picture
+  , imageCurField :: Picture
+  , imageShowStreets :: Picture
+  , imageInfoAboutStreets :: Picture
   }
 
 -- | Состояние игры
@@ -49,6 +53,9 @@ data GameState = GameState
   , isAuction :: Bool
   , prevTypeStep :: Int
   , isPauseEnd :: Bool
+  , isShowStreets :: Bool
+  , streetsToShow :: [Street]
+  , wantToRestart :: Bool
   }
 
 data MenuPledgeState = MenuPledgeState
@@ -78,6 +85,9 @@ data Street = Street
   , priceRent :: Int  -- Стоимость аренды
   , owner :: Int      -- Кто владеет
   , isPledge :: Bool
+  , streetId :: Int
+  , streetGroup :: Int
+  , amGroup :: Int
   }
 
 -- | Значения кубиков
@@ -130,6 +140,9 @@ getLand =
       , priceRent = 0
       , owner = 6         -- Для специальных  полей - фиктивный седьмой игрок
       , isPledge = False
+      , streetId = 0
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 1
       { name = "ski kvant" --"СКИ Квантовая информатика"
@@ -138,6 +151,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 1
+      , streetGroup = 1
+      , amGroup = 2
       }
     , Street -- id = 2 
       { name = "kazna" --"Общественная казна"
@@ -146,6 +162,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 2
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 3 
       { name = "ski parall" --"СКИ Параллельные вычисления"
@@ -154,6 +173,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 3
+      , streetGroup = 1
+      , amGroup = 2
       }
     , Street -- id = 4
       { name = "Налог" -- Смотреть описание для "Сверхналога"
@@ -162,6 +184,9 @@ getLand =
       , owner = 6
       , isRent = True
       , isPledge = False
+      , streetId = 4
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 5 
       { name = "mz1" --"Машзал 1"
@@ -170,6 +195,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 5
+      , streetGroup = 2
+      , amGroup = 4
       }
     , Street -- id = 6 
       { name = "sp pdc" --"СП ПЦД"
@@ -178,6 +206,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 6
+      , streetGroup = 3
+      , amGroup = 3
       }
     , Street -- id = 7 
       { name = "Шанс"
@@ -186,6 +217,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 7
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 8 
       { name = "sp udis" --"СП УДИС"
@@ -194,6 +228,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 8
+      , streetGroup = 3
+      , amGroup = 3
       }
     , Street -- id = 9 
       { name = "sp corr" --"СП Корректность программ"
@@ -202,6 +239,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 9
+      , streetGroup = 3
+      , amGroup = 3
       }
     , Street -- id = 10
       { name = "Академ"
@@ -210,6 +250,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 10
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 11
       { name = "MatKib dmmk" --"МатКиб ДММК"
@@ -218,6 +261,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 11
+      , streetGroup = 4
+      , amGroup = 3
       }
     , Street -- id = 12
       { name = "Poteryashki"
@@ -226,6 +272,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 12
+      , streetGroup = 5
+      , amGroup = 2
       }
     , Street -- id = 13
       { name = "MatKib dfca" --"МатКиб ДФСА"
@@ -234,6 +283,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 13
+      , streetGroup = 4
+      , amGroup = 3
       }
     , Street -- id = 14
       { name = "MatKib diskr" --"Маткиб Дискретный анализ"
@@ -242,6 +294,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 14
+      , streetGroup = 4
+      , amGroup = 3
       }
     , Street -- id = 15
       { name = "mz2" --"Машзал 2"
@@ -250,6 +305,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 15
+      , streetGroup = 2
+      , amGroup = 4
       }
     , Street -- id = 16
       { name = "io morozov" --"ИО Морозов"
@@ -258,6 +316,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 16
+      , streetGroup = 6
+      , amGroup = 3
       }
     , Street -- id = 17
       { name = "Общественная казна"
@@ -266,6 +327,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 17
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 18
       { name = "io novikova" --"ИО Новикова"
@@ -274,6 +338,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 18
+      , streetGroup = 6
+      , amGroup = 3
       }
     , Street -- id = 19
       { name = "io denisov" --"ИО Денисов"
@@ -282,6 +349,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 19
+      , streetGroup = 6
+      , amGroup = 3
       }
     , Street -- id = 20
       { name = "Бесплатная курилка"
@@ -290,6 +360,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 20
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 21
       { name = "matstat teor riskov" --"МАТСТАТ Теория рисков"
@@ -298,6 +371,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 21
+      , streetGroup = 7
+      , amGroup = 3
       }
     , Street -- id = 22
       { name = "Шанс"
@@ -306,6 +382,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 22
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 23
       { name = "matstat dgmc" --"МАТСТАТ ДГМС"
@@ -314,6 +393,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 23
+      , streetGroup = 7
+      , amGroup = 3
       }
     , Street -- id = 24
       { name = "matstat motvi" --"МАТСТАТ МОТВЫ"
@@ -322,6 +404,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 24
+      , streetGroup = 7
+      , amGroup = 3
       }
     , Street -- id = 25
       { name = "mz3" --"Машзал 3"
@@ -330,6 +415,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 25
+      , streetGroup = 2
+      , amGroup = 4
       }
     , Street -- id = 26
       { name = "asvk lbis" --"АСВК ЛБИС"
@@ -338,6 +426,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 26
+      , streetGroup = 8
+      , amGroup = 3
       }
     , Street -- id = 27
       { name = "asvk lvk" --"АСВК ЛВК"
@@ -346,6 +437,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 27
+      , streetGroup = 8
+      , amGroup = 3
       }
     , Street -- id = 28
       { name = "technosphera" --"Техносфера"
@@ -354,6 +448,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 28
+      , streetGroup = 5
+      , amGroup = 2
       }
     , Street -- id = 29
       { name = "asvk medialab" --"АСВК Медиалаб"
@@ -362,6 +459,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 29
+      , streetGroup = 8
+      , amGroup = 3
       }
     , Street -- id = 30
       { name = "Отправляйся в академ"
@@ -370,6 +470,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 30
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 31
       { name = "aya paradigma" --"АЯ Парадигмы программирования"
@@ -378,6 +481,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 31
+      , streetGroup = 9
+      , amGroup = 3
       }
     , Street -- id = 32
       { name = "aya comp ling" --"АЯ Компьютерная лингвистика"
@@ -386,6 +492,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 32
+      , streetGroup = 9
+      , amGroup = 3
       }
     , Street -- id = 33
       { name = "Общественая казна"
@@ -394,6 +503,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 33
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 34
       { name = "aya II" --"АЯ Искусственный интеллект"
@@ -402,6 +514,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 34
+      , streetGroup = 9
+      , amGroup = 3
       }
     , Street -- id = 35
       { name = "mz4" --"Машзал 4"
@@ -410,6 +525,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 35
+      , streetGroup = 2
+      , amGroup = 4
       }
     , Street -- id = 36
       { name = "Шанс"
@@ -418,6 +536,9 @@ getLand =
       , priceRent = 0
       , owner = 6
       , isPledge = False
+      , streetId = 36
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 37
       { name = "mmp mat" --"ММП МАТ"
@@ -426,6 +547,9 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 37
+      , streetGroup = 10
+      , amGroup = 2
       }
     , Street -- id = 38
       { name = "Сверхналог"
@@ -434,6 +558,9 @@ getLand =
       , owner = 6 -- По алгоритму работы никто не сможет купить, потому что isRent = True
       , isRent = True -- Но при этом все будут платить мнимому 5ому игроку 100$
       , isPledge = False
+      , streetId = 38
+      , streetGroup = 0
+      , amGroup = 11
       }
     , Street -- id = 39
       { name = "mmp bmmo" --"ММП БММО"
@@ -442,5 +569,8 @@ getLand =
       , isRent = False
       , owner = 6
       , isPledge = False
+      , streetId = 39
+      , streetGroup = 10
+      , amGroup = 2
       }
     ]
