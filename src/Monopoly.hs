@@ -789,14 +789,29 @@ drawPledgeButton image gameState
       player = (players gameState) !! (gamePlayer gameState)
 
 drawCurFieldInfo :: Picture -> GameState -> Picture
-drawCurFieldInfo image gameState = pictures
-  [ translate 530 0 image
-  , translate 500 100(scale 0.2 0.2 (text strField))
-  , translate 500 20 (scale 0.2 0.2 (text strOwner))
-  , translate 500 p (scale 0.2 0.2 (text fieldPrice))
-  , translate x y (scale 0.2 0.2 (text fieldRent))
-  --, translate 0 0 (scale 0.2 0.2 (text (show (typeStep gameState))))
-  ]
+drawCurFieldInfo image gameState 
+  | (strGr == 0) = pictures
+      [ translate 530 0 image
+      , translate 500 100 (scale 0.2 0.2 (text strField))
+      , translate 500 20 (scale 0.2 0.2 (text " - "))
+      , translate 500 p (scale 0.2 0.2 (text "N/A"))
+      , translate x y (scale 0.2 0.2 (text "N/A"))
+      ]
+  | (fieldOwner == 6) = pictures
+      [ translate 530 0 image
+      , translate 500 100 (scale 0.2 0.2 (text strField))
+      , translate 500 20 (scale 0.2 0.2 (text " - "))
+      , translate 500 p (scale 0.2 0.2 (text fieldPrice))
+      , translate x y (scale 0.2 0.2 (text fieldRent))
+      ]
+  | otherwise = pictures
+      [ translate 530 0 image
+      , translate 500 100 (scale 0.2 0.2 (text strField))
+      , translate 500 20 (scale 0.2 0.2 (text strOwner))
+      , translate 500 p (scale 0.2 0.2 (text fieldPrice))
+      , translate x y (scale 0.2 0.2 (text fieldRent))
+      --, translate 0 0 (scale 0.2 0.2 (text (show (typeStep gameState))))
+      ]
     where
       (x, y) = (500, -150)
       p = -70
@@ -804,6 +819,7 @@ drawCurFieldInfo image gameState = pictures
       currentField = (playerCell player)
       field = (land gameState) !! currentField
       strField = (name field)
+      strGr = (streetGroup field)
       fieldOwner = (owner field)
       strOwner = "Player " ++ (show (fieldOwner + 1))
       fieldPrice = (show (price field))
